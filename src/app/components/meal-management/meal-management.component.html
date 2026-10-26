@@ -19,7 +19,7 @@
           <div>{{ foodSuggestion.name }}</div>
           <small *ngIf="foodSuggestion.source">[{{ foodSuggestion.source }}]</small>
           <small *ngIf="foodSuggestion.energy_kcal">
-            - {{ foodSuggestion.energy_kcal | number: "1.0-0" }} kcal/100g
+            - {{ foodSuggestion.energy_kcal | number: "1.0-0" }} kcal/100{{ foodSuggestion.unit === "ml" ? "mL" : "g" }}
           </small>
         </div>
       </ng-template>

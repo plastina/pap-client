@@ -226,7 +226,7 @@ export class PdfExportService {
       yPos += spacing.mealTitleToTable;
 
       const head = [
-        ['Alimento', 'Qtd (g)', 'Kcal', 'Prot (g)', 'Carb (g)', 'Gord (g)'],
+        ['Alimento', 'Qtd', 'Kcal', 'Prot (g)', 'Carb (g)', 'Gord (g)'],
       ];
       const body = meal.items.map((item) => {
         const food = item.food || {};
@@ -235,7 +235,7 @@ export class PdfExportService {
         const factor = qty / 100;
         return [
           food.name || 'N/A',
-          qty.toFixed(0),
+          `${qty.toFixed(0)} ${food.unit === 'ml' ? 'mL' : 'g'}`,
           ((food.energy_kcal || 0) * factor).toFixed(0),
           ((food.protein_g || 0) * factor).toFixed(1),
           ((food.carbohydrate_g || 0) * factor).toFixed(1),

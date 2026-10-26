@@ -428,7 +428,7 @@ export class AppComponent implements OnInit, AfterViewInit, OnDestroy {
       const newItem: DietItem = {
         food,
         displayQuantity: 100,
-        selectedMeasure: 'grama',
+        selectedMeasure: this.baseMeasureName(food),
         quantityInGrams: 100,
         measures,
       };
@@ -447,7 +447,7 @@ export class AppComponent implements OnInit, AfterViewInit, OnDestroy {
     };
 
     this.foodApiService.getFoodMeasures(food.id).subscribe({
-      next: (measures) => pushItem(this.normalizeMeasures(measures)),
+      next: (measures) => pushItem(this.normalizeMeasures(measures, food)),
       error: (err) => {
         this.messageService.add({
           severity: 'warn',
@@ -455,21 +455,29 @@ export class AppComponent implements OnInit, AfterViewInit, OnDestroy {
           detail:
             err.message || this.i18nService.t('toast.measureErrorDetail'),
         });
-        pushItem([
-          { measure_name: 'grama', display_name: 'Gram', gram_equivalent: 1 },
-        ]);
+        pushItem([this.baseMeasure(food)]);
       },
     });
   }
 
-  private normalizeMeasures(measures: Measure[]): Measure[] {
-    const gram: Measure = {
-      measure_name: 'grama',
-      display_name: 'Gram',
-      gram_equivalent: 1,
-    };
-    const hasGrama = measures.some((m) => m.measure_name === 'grama');
-    const allMeasures = hasGrama ? measures : [gram, ...measures];
+  private baseMeasureName(food: Food): string {
+    return food.unit === 'ml' ? 'mililitro' : 'grama';
+  }
+
+  private baseMeasure(food: Food): Measure {
+    return food.unit === 'ml'
+      ? { measure_name: 'mililitro', display_name: 'Mililitro', gram_equivalent: 1 }
+      : { measure_name: 'grama', display_name: 'Gram', gram_equivalent: 1 };
+  }
+
+  private isBaseMeasure(name: string): boolean {
+    return name === 'grama' || name === 'mililitro';
+  }
+
+  private normalizeMeasures(measures: Measure[], food: Food): Measure[] {
+    const base = this.baseMeasure(food);
+    const hasBase = measures.some((m) => m.measure_name === base.measure_name);
+    const allMeasures = hasBase ? measures : [base, ...measures];
     return allMeasures.filter(
       (m, index, arr) =>
         arr.findIndex((x) => x.measure_name === m.measure_name) === index,
@@ -480,7 +488,7 @@ export class AppComponent implements OnInit, AfterViewInit, OnDestroy {
     const selectedMeasureData = item.measures.find(
       (m) => m.measure_name === item.selectedMeasure,
     );
-    if (item.selectedMeasure === 'grama' || !selectedMeasureData) {
+    if (this.isBaseMeasure(item.selectedMeasure) || !selectedMeasureData) {
       item.quantityInGrams = item.displayQuantity;
     } else {
       item.quantityInGrams =

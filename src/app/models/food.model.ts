@@ -2,6 +2,8 @@ export interface Food {
   id: string;
   name: string;
   source: string;
+  /** Unidade-base do alimento: 'ml' para liquidos, 'g' para os demais. */
+  unit?: 'g' | 'ml';
   energy_kcal: number;
   protein_g: number;
   carbohydrate_g: number;
