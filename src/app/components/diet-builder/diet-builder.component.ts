@@ -11,6 +11,7 @@ import { SelectModule } from 'primeng/select';
 import { TooltipModule } from 'primeng/tooltip';
 import { DietItem } from '../../models/diet-item.model';
 import { Meal } from '../../models/meal.model';
+import { Measure } from '../../models/measure.model';
 import { TranslatePipe } from '../../pipes/t.pipe';
 import { I18nService } from '../../services/i18n.service';
 
@@ -126,6 +127,21 @@ export class DietBuilderComponent {
         this.mealDeleted.emit(index);
       },
     });
+  }
+
+  // Rotulo da medida com o peso equivalente, ex.: "fatia média (15 g)".
+  // Calculado na exibicao para valer tambem em planos salvos/importados.
+  measureLabel(item: DietItem, measure?: Measure): string {
+    const m =
+      measure ?? item.measures?.find((x) => x.measure_name === item.selectedMeasure);
+    if (!m) return item.selectedMeasure;
+    const name = m.measure_name;
+    const isBase = name === 'grama' || name === 'mililitro';
+    const hasAmount = /\d\s*(g|ml)\)/i.test(name);
+    if (isBase || hasAmount || !m.gram_equivalent) return name;
+    const unit = item.food?.unit === 'ml' ? 'mL' : 'g';
+    const amount = Math.round(m.gram_equivalent * 10) / 10;
+    return `${name} (${amount} ${unit})`;
   }
 
   getItemKcal(item: DietItem): number {

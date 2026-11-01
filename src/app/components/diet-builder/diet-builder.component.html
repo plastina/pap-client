@@ -159,9 +159,16 @@
                 (ngModelChange)="onItemInputChange(mealIndex, itemIndex)"
                 optionLabel="measure_name"
                 optionValue="measure_name"
-                [pTooltip]="item.selectedMeasure"
+                [pTooltip]="measureLabel(item)"
                 tooltipPosition="top"
-              ></p-select>
+              >
+                <ng-template pTemplate="selectedItem" let-option>
+                  {{ measureLabel(item, option) }}
+                </ng-template>
+                <ng-template pTemplate="item" let-option>
+                  {{ measureLabel(item, option) }}
+                </ng-template>
+              </p-select>
             </div>
 
             <div class="item-kcal" [attr.data-label]="'summary.calories' | t">
