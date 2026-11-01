@@ -105,4 +105,39 @@ describe('DietBuilderComponent', () => {
       });
     });
   });
+
+  describe('measureLabel', () => {
+    const measures = [
+      { measure_name: 'grama', display_name: 'Grama', gram_equivalent: 1 },
+      { measure_name: 'fatia média', display_name: 'fatia média', gram_equivalent: 15 },
+      { measure_name: 'fatia pequena (30g)', display_name: '', gram_equivalent: 30 },
+    ];
+    const item = (selectedMeasure: string, unit?: Food['unit']) => ({
+      food: makeFood({ unit }),
+      displayQuantity: 1,
+      selectedMeasure,
+      quantityInGrams: 15,
+      measures,
+    });
+
+    it('appends the gram weight to household measures', () => {
+      expect(makeComponent().measureLabel(item('fatia média'))).toBe(
+        'fatia média (15 g)',
+      );
+    });
+
+    it('uses mL for liquids', () => {
+      expect(makeComponent().measureLabel(item('fatia média', 'ml'))).toBe(
+        'fatia média (15 mL)',
+      );
+    });
+
+    it('keeps base measures and names that already carry the weight', () => {
+      const component = makeComponent();
+      expect(component.measureLabel(item('grama'))).toBe('grama');
+      expect(component.measureLabel(item('fatia pequena (30g)'))).toBe(
+        'fatia pequena (30g)',
+      );
+    });
+  });
 });
