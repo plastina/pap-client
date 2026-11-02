@@ -1,203 +1,212 @@
-<h3 class="section-title builder-title" *ngIf="meals.length > 0">
+<h2 class="sr-only" *ngIf="meals.length > 0">
   {{ "summary.currentPlan" | t }}
-</h3>
+</h2>
 
-<div class="meals-container" *ngIf="meals.length > 0">
-  <div
+<div
+  class="meals-container"
+  *ngIf="meals.length > 0"
+  #mealsTrack
+  (scroll)="onTrackScroll()"
+>
+  <section
     *ngFor="let meal of meals; let mealIndex = index"
-    class="meal-column-card"
+    class="meal"
     [class.is-target]="meal.name === selectedMealName"
+    [attr.aria-label]="meal.name"
   >
-    <p-card class="meal-card">
-      <ng-template pTemplate="header">
-        <div class="meal-card-header-content">
-          <div *ngIf="editingMealIndex !== mealIndex" class="meal-header-view">
-            <div class="meal-header-top">
-              <h4 class="meal-title">{{ meal.name }}</h4>
-              <div class="meal-kcal">
-                {{ getMealKcal(meal) | number: "1.0-0" }} kcal
-              </div>
-            </div>
-            <div class="meal-macros" *ngIf="meal.items?.length">
-              <span class="meal-macro"
-                >{{ "summary.protein" | t }}
-                {{ getMealMacros(meal).protein | number: "1.1-1" }}g</span
-              >
-              <span class="meal-macro"
-                >{{ "summary.carbs" | t }}
-                {{ getMealMacros(meal).carbs | number: "1.1-1" }}g</span
-              >
-              <span class="meal-macro"
-                >{{ "summary.fat" | t }}
-                {{ getMealMacros(meal).fat | number: "1.1-1" }}g</span
-              >
-              <span class="meal-macro"
-                >{{ "summary.fiber" | t }}
-                {{ getMealMacros(meal).fiber | number: "1.1-1" }}g</span
-              >
-            </div>
-            <div class="meal-header-actions">
-              <span
-                *ngIf="meal.name === selectedMealName"
-                class="meal-target-flag"
-              >
-                {{ "builder.currentTarget" | t }}
-              </span>
-              <button
-                *ngIf="meal.name !== selectedMealName"
-                pButton
-                type="button"
-                [label]="'builder.useAsTarget' | t"
-                class="meal-target-btn p-button-sm p-button-text"
-                (click)="mealTargeted.emit(meal.name)"
-                [pTooltip]="
-                  'builder.useAsTargetAria' | t: { mealName: meal.name }
-                "
-                tooltipPosition="top"
-                [attr.aria-label]="
-                  'builder.useAsTargetAria' | t: { mealName: meal.name }
-                "
-              ></button>
-              <span class="meal-header-icons">
-                <button
-                  pButton
-                  type="button"
-                  [label]="'builder.edit' | t"
-                  class="meal-edit-btn p-button-sm p-button-text"
-                  (click)="startEditMeal(mealIndex, meal.name)"
-                  [pTooltip]="'builder.editMeal' | t"
-                  tooltipPosition="top"
-                  [attr.aria-label]="'builder.editMeal' | t"
-                ></button>
-                <button
-                  pButton
-                  type="button"
-                  [label]="'builder.delete' | t"
-                  class="meal-delete-btn p-button-sm p-button-danger p-button-text"
-                  (click)="deleteMeal(mealIndex)"
-                  [pTooltip]="'builder.deleteMeal' | t"
-                  tooltipPosition="top"
-                  [attr.aria-label]="'builder.deleteMeal' | t"
-                ></button>
-              </span>
-            </div>
-          </div>
-          <div
-            *ngIf="editingMealIndex === mealIndex"
-            class="meal-header-edit p-inputgroup"
+    <header class="meal__head">
+      <ng-container *ngIf="editingMealIndex !== mealIndex; else editName">
+        <div class="meal__title-row">
+          <h3 class="meal__title">{{ meal.name }}</h3>
+          <span
+            *ngIf="meal.name === selectedMealName"
+            class="meal__target-flag"
           >
-            <input
-              pInputText
-              type="text"
-              [(ngModel)]="editedMealName"
-              [placeholder]="'builder.newName' | t"
-              (keydown.enter)="saveEditMeal(mealIndex)"
-              class="p-inputtext-sm edit-meal-name-input"
-            />
-            <button
-              pButton
-              type="button"
-              icon="pi pi-check"
-              class="meal-save-btn p-button-sm p-button-success p-button-text"
-              (click)="saveEditMeal(mealIndex)"
-              [pTooltip]="'builder.save' | t"
-              tooltipPosition="top"
-              [attr.aria-label]="'builder.saveNewName' | t"
-            ></button>
-            <button
-              pButton
-              type="button"
-              icon="pi pi-times"
-              class="meal-cancel-btn p-button-sm p-button-secondary p-button-text"
-              (click)="cancelEditMeal()"
-              [pTooltip]="'builder.cancel' | t"
-              tooltipPosition="top"
-              [attr.aria-label]="'builder.cancelEdit' | t"
-            ></button>
-          </div>
+            {{ "builder.currentTarget" | t }}
+          </span>
+          <span class="meal__position">
+            {{
+              "builder.mealPosition"
+                | t: { current: mealIndex + 1, total: meals.length }
+            }}
+          </span>
+          <span class="meal__kcal">
+            {{ getMealKcal(meal) | number: "1.0-0" }}<small>kcal</small>
+          </span>
         </div>
-      </ng-template>
-      <ng-template pTemplate="content">
-        <div class="meal-items-list">
-          <div
-            *ngFor="let item of meal.items; let itemIndex = index"
-            class="diet-item"
-          >
-            <div
-              class="item-name heading-xs"
-              [pTooltip]="item.food.name"
-              tooltipPosition="top"
+
+        <div class="meal__meta">
+          <span class="meal__macros" *ngIf="meal.items?.length">
+            <span
+              ><i class="swatch swatch--protein" aria-hidden="true"></i
+              >{{ "summary.protein" | t }}
+              {{ getMealMacros(meal).protein | number: "1.1-1" }} g</span
             >
-              {{ item.food.name }}
-            </div>
+            <span
+              ><i class="swatch swatch--carbs" aria-hidden="true"></i
+              >{{ "summary.carbs" | t }}
+              {{ getMealMacros(meal).carbs | number: "1.1-1" }} g</span
+            >
+            <span
+              ><i class="swatch swatch--fat" aria-hidden="true"></i
+              >{{ "summary.fat" | t }}
+              {{ getMealMacros(meal).fat | number: "1.1-1" }} g</span
+            >
+            <span
+              ><i class="swatch swatch--fiber" aria-hidden="true"></i
+              >{{ "summary.fiber" | t }}
+              {{ getMealMacros(meal).fiber | number: "1.1-1" }} g</span
+            >
+          </span>
 
-            <div class="item-qty" [attr.data-label]="'builder.quantity' | t">
-              <p-inputNumber
-                [(ngModel)]="item.displayQuantity"
-                (ngModelChange)="onItemInputChange(mealIndex, itemIndex)"
-                inputId="'displayQty-' + mealIndex + '-' + itemIndex"
-                mode="decimal"
-                [min]="0"
-                [step]="0.5"
-                [showButtons]="true"
-                buttonLayout="horizontal"
-                incrementButtonIcon="pi pi-plus"
-                decrementButtonIcon="pi pi-minus"
-                [minFractionDigits]="0"
-                [maxFractionDigits]="1"
-                class="meal-item-quantity-input p-inputtext-sm"
-              ></p-inputNumber>
-            </div>
+          <span class="meal__actions">
+            <button
+              *ngIf="meal.name !== selectedMealName"
+              type="button"
+              class="meal__action meal__action--target"
+              (click)="mealTargeted.emit(meal.name)"
+              [attr.aria-label]="
+                'builder.useAsTargetAria' | t: { mealName: meal.name }
+              "
+            >
+              <i class="pi pi-arrow-right" aria-hidden="true"></i>
+              {{ "builder.useAsTarget" | t }}
+            </button>
+            <button
+              type="button"
+              class="meal__action"
+              (click)="startEditMeal(mealIndex, meal.name)"
+              [attr.aria-label]="'builder.editMeal' | t"
+            >
+              {{ "builder.edit" | t }}
+            </button>
+            <button
+              type="button"
+              class="meal__action meal__action--danger"
+              (click)="deleteMeal(mealIndex)"
+              [attr.aria-label]="'builder.deleteMeal' | t"
+            >
+              {{ "builder.delete" | t }}
+            </button>
+          </span>
+        </div>
+      </ng-container>
 
-            <div class="item-measure" [attr.data-label]="'builder.measure' | t">
-              <p-select
-                [placeholder]="'builder.measure' | t"
-                class="meal-item-measure-dropdown p-inputtext-sm"
-                appendTo="body"
-                [options]="item.measures"
-                [(ngModel)]="item.selectedMeasure"
-                (ngModelChange)="onItemInputChange(mealIndex, itemIndex)"
-                optionLabel="measure_name"
-                optionValue="measure_name"
-                [pTooltip]="measureLabel(item)"
-                tooltipPosition="top"
-              >
-                <ng-template pTemplate="selectedItem" let-option>
-                  {{ measureLabel(item, option) }}
-                </ng-template>
-                <ng-template pTemplate="item" let-option>
-                  {{ measureLabel(item, option) }}
-                </ng-template>
-              </p-select>
-            </div>
-
-            <div class="item-kcal" [attr.data-label]="'summary.calories' | t">
-              {{ getItemKcal(item) | number: "1.0-0" }} kcal
-            </div>
-
-            <div class="item-actions">
-              <button
-                pButton
-                type="button"
-                icon="pi pi-times"
-                class="item-remove-btn p-button-sm p-button-danger p-button-text"
-                (click)="removeFoodFromDiet(mealIndex, itemIndex)"
-                [pTooltip]="'builder.removeItem' | t"
-                tooltipPosition="top"
-                [attr.aria-label]="'builder.removeItem' | t"
-              ></button>
-            </div>
-          </div>
-          <div
-            *ngIf="!meal.items || meal.items.length === 0"
-            class="empty-meal-message"
+      <ng-template #editName>
+        <div class="meal__edit">
+          <input
+            pInputText
+            type="text"
+            [(ngModel)]="editedMealName"
+            [placeholder]="'builder.newName' | t"
+            [attr.aria-label]="'builder.newName' | t"
+            (keydown.enter)="saveEditMeal(mealIndex)"
+            (keydown.escape)="cancelEditMeal()"
+            class="meal__edit-input"
+          />
+          <button
+            type="button"
+            class="icon-btn icon-btn--confirm"
+            (click)="saveEditMeal(mealIndex)"
+            [attr.aria-label]="'builder.saveNewName' | t"
           >
-            <i>{{ "builder.emptyMeal" | t }}</i>
-          </div>
+            <i class="pi pi-check" aria-hidden="true"></i>
+          </button>
+          <button
+            type="button"
+            class="icon-btn"
+            (click)="cancelEditMeal()"
+            [attr.aria-label]="'builder.cancelEdit' | t"
+          >
+            <i class="pi pi-times" aria-hidden="true"></i>
+          </button>
         </div>
       </ng-template>
-    </p-card>
-  </div>
+    </header>
+
+    <div class="meal__body">
+      <div class="meal__cols" *ngIf="meal.items?.length" aria-hidden="true">
+        <span>{{ "builder.quantity" | t }}</span>
+        <span>{{ "builder.colFood" | t }}</span>
+        <span>{{ "builder.measure" | t }}</span>
+        <span class="meal__cols-kcal">{{ "builder.colKcal" | t }}</span>
+        <span></span>
+      </div>
+
+      <div
+        *ngFor="let item of meal.items; let itemIndex = index"
+        class="item"
+      >
+        <div class="item__qty">
+          <p-inputNumber
+            [(ngModel)]="item.displayQuantity"
+            (ngModelChange)="onItemInputChange(mealIndex, itemIndex)"
+            [inputId]="'qty-' + mealIndex + '-' + itemIndex"
+            [ariaLabel]="('builder.quantity' | t) + ': ' + item.food.name"
+            mode="decimal"
+            [min]="0"
+            [step]="0.5"
+            [showButtons]="true"
+            buttonLayout="horizontal"
+            incrementButtonIcon="pi pi-plus"
+            decrementButtonIcon="pi pi-minus"
+            [minFractionDigits]="0"
+            [maxFractionDigits]="1"
+          ></p-inputNumber>
+        </div>
+
+        <div class="item__name" [title]="item.food.name">
+          <span>{{ item.food.name }}</span>
+        </div>
+
+        <div class="item__measure">
+          <p-select
+            [placeholder]="'builder.measure' | t"
+            appendTo="body"
+            [options]="item.measures"
+            [(ngModel)]="item.selectedMeasure"
+            (ngModelChange)="onItemInputChange(mealIndex, itemIndex)"
+            optionLabel="measure_name"
+            optionValue="measure_name"
+            [ariaLabel]="('builder.measure' | t) + ': ' + item.food.name"
+          >
+            <ng-template pTemplate="selectedItem" let-option>
+              {{ measureLabel(item, option) }}
+            </ng-template>
+            <ng-template pTemplate="item" let-option>
+              {{ measureLabel(item, option) }}
+            </ng-template>
+          </p-select>
+        </div>
+
+        <div class="item__kcal">
+          {{ getItemKcal(item) | number: "1.0-0" }}
+        </div>
+
+        <button
+          type="button"
+          class="icon-btn icon-btn--remove"
+          (click)="removeFoodFromDiet(mealIndex, itemIndex)"
+          [attr.aria-label]="('builder.removeItem' | t) + ': ' + item.food.name"
+        >
+          <i class="pi pi-times" aria-hidden="true"></i>
+        </button>
+      </div>
+
+      <div *ngIf="!meal.items || meal.items.length === 0" class="meal__empty">
+        <span>{{ "builder.emptyMeal" | t }}</span>
+        <button
+          *ngIf="meal.name !== selectedMealName"
+          type="button"
+          class="meal__action meal__action--target"
+          (click)="mealTargeted.emit(meal.name)"
+        >
+          <i class="pi pi-arrow-right" aria-hidden="true"></i>
+          {{ "builder.useAsTarget" | t }}
+        </button>
+      </div>
+    </div>
+  </section>
 </div>
 
 <p *ngIf="!meals || meals.length === 0" class="builder-no-meals">
@@ -215,31 +224,31 @@
     {{ "builder.addMeal" | t }}
   </button>
 
-  <div *ngIf="addingMeal" class="add-meal-form p-inputgroup">
+  <div *ngIf="addingMeal" class="add-meal-form">
     <input
       pInputText
       type="text"
       [(ngModel)]="newMealName"
       [placeholder]="'meal.new.placeholder' | t"
+      [attr.aria-label]="'meal.new.placeholder' | t"
       (keydown.enter)="confirmAddMeal()"
       (keydown.escape)="cancelAddMeal()"
-      class="p-inputtext-sm"
     />
     <button
-      pButton
       type="button"
-      icon="pi pi-check"
-      class="p-button-sm p-button-success p-button-text"
+      class="icon-btn icon-btn--confirm"
       (click)="confirmAddMeal()"
       [attr.aria-label]="'meal.addAria' | t"
-    ></button>
+    >
+      <i class="pi pi-check" aria-hidden="true"></i>
+    </button>
     <button
-      pButton
       type="button"
-      icon="pi pi-times"
-      class="p-button-sm p-button-secondary p-button-text"
+      class="icon-btn"
       (click)="cancelAddMeal()"
       [attr.aria-label]="'builder.cancel' | t"
-    ></button>
+    >
+      <i class="pi pi-times" aria-hidden="true"></i>
+    </button>
   </div>
 </div>

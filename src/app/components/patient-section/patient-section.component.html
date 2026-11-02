@@ -1,15 +1,9 @@
 <details class="patient-panel" [open]="startExpanded">
   <summary class="patient-panel__summary" [attr.aria-label]="'patient.toggleAria' | t">
     <i class="pi pi-chevron-right patient-panel__chevron" aria-hidden="true"></i>
-    <span class="patient-panel__title">
-      {{ patientData.name?.trim() || ("patient.title" | t) }}
-    </span>
-    <span class="patient-panel__facts" *ngIf="hasSummaryFacts">
-      <span class="fact" *ngIf="weight !== null">{{ weight }} kg</span>
-      <span class="fact" *ngIf="height !== null">{{ height }} cm</span>
-      <span class="fact" *ngIf="age !== null">
-        {{ age }} {{ "patient.ageSuffix" | t }}
-      </span>
+    <span class="patient-panel__title">{{ "patient.title" | t }}</span>
+    <span class="patient-panel__hint" *ngIf="patientData.goals?.trim()">
+      {{ patientData.goals }}
     </span>
   </summary>
 

@@ -8,17 +8,19 @@
   background: var(--surface-section);
   border: 3px solid var(--text-color);
   border-radius: 0;
-  padding: var(--spacing-lg);
+  padding: var(--spacing-lg) 1.125rem;
   box-shadow: none;
 }
 
 .section-title {
   font-family: var(--font-family-display);
-  font-size: 1.05rem;
+  font-size: 1.625rem;
+  font-weight: var(--font-weight-bold);
+  line-height: 1.05;
   text-transform: uppercase;
-  letter-spacing: -0.01em;
+  letter-spacing: 0.01em;
   color: var(--text-color);
-  margin: 0 0 0.15rem 0;
+  margin: 0 0 0.25rem 0;
 }
 
 .rail-subtitle {
@@ -31,7 +33,7 @@
    value, thin rules separate each macro row below it. */
 .rule-thick {
   border: none;
-  border-top: 5px solid var(--text-color);
+  border-top: 7px solid var(--text-color);
   margin: var(--spacing-sm) 0;
 }
 
@@ -62,7 +64,8 @@
 }
 
 .kcal-row__value .num {
-  font-size: 1.6rem;
+  font-family: var(--font-family-display);
+  font-size: 2rem;
   font-weight: var(--font-weight-semibold);
   color: var(--text-color);
 }
@@ -74,12 +77,24 @@
   font-family: var(--font-family);
 }
 
+.macro-bar {
+  display: flex;
+  gap: 2px;
+  height: 0.5rem;
+  margin: 0.5rem 0 0.25rem;
+}
+
+.macro-bar__seg {
+  flex: 1 1 0;
+  border-radius: 1px;
+}
+
 .macro-row {
   display: flex;
   align-items: center;
   justify-content: space-between;
   padding: 0.5rem 0;
-  font-size: var(--font-size-sm);
+  font-size: var(--font-size-base);
   color: var(--text-color);
   gap: var(--spacing-sm);
 }
@@ -89,30 +104,6 @@
   align-items: center;
   gap: var(--spacing-sm);
   min-width: 0;
-}
-
-.swatch {
-  display: inline-block;
-  width: 8px;
-  height: 8px;
-  border-radius: 1px;
-  flex-shrink: 0;
-}
-
-.swatch--protein {
-  background: var(--primary-color);
-}
-
-.swatch--carbs {
-  background: var(--accent-color);
-}
-
-.swatch--fat {
-  background: var(--berry-color);
-}
-
-.swatch--fiber {
-  background: var(--text-light);
 }
 
 .macro-row .num {
@@ -125,7 +116,6 @@
 .no-totals-message {
   text-align: center;
   color: var(--text-muted);
-  font-style: italic;
   padding: var(--spacing-lg) var(--spacing-sm);
 }
 

@@ -141,6 +141,31 @@ export class AppComponent implements OnInit, AfterViewInit, OnDestroy {
     );
   }
 
+  /** Short facts for the board: weight, height, age. */
+  get patientFacts(): string[] {
+    const p = this.patientSessionData;
+    const facts: string[] = [];
+    if (p?.weight != null) facts.push(`${p.weight} kg`);
+    if (p?.height != null) facts.push(`${p.height} cm`);
+    const age = this.patientAge;
+    if (age !== null) facts.push(`${age} ${this.i18nService.t('patient.ageSuffix')}`);
+    return facts;
+  }
+
+  private get patientAge(): number | null {
+    const dob = this.patientSessionData?.dob;
+    if (!dob) return null;
+    const date = dob instanceof Date ? dob : new Date(dob);
+    if (Number.isNaN(date.getTime())) return null;
+    const now = new Date();
+    let years = now.getFullYear() - date.getFullYear();
+    const monthDiff = now.getMonth() - date.getMonth();
+    if (monthDiff < 0 || (monthDiff === 0 && now.getDate() < date.getDate())) {
+      years--;
+    }
+    return years >= 0 && years < 150 ? years : null;
+  }
+
   ngOnInit(): void {
     this.currentLanguage = this.i18nService.currentLanguage;
     this.updateLanguageOptions();

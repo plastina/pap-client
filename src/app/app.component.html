@@ -1,31 +1,18 @@
 <p-toast></p-toast>
 <p-confirmDialog icon="pi pi-exclamation-triangle"></p-confirmDialog>
 
-<header class="app-header">
-  <div class="container app-header__container">
-    <div class="app-header__brand">
-      <h1 class="app-header__title">{{ "header.title" | t }}</h1>
-      <p class="app-header__subtitle">
-        {{ "header.subtitle" | t }}
-      </p>
-
-      <div class="app-header__meta">
-        <span class="meta-chip">
-          <i class="pi pi-save"></i>
-          {{ "header.autosave" | t }}
-        </span>
-        <span class="meta-chip" [class.is-active]="hasItemsInAnyMeal">
-          <i class="pi pi-chart-line"></i>
-          {{
-            hasItemsInAnyMeal
-              ? ("header.progress.inProgress" | t)
-              : ("header.progress.new" | t)
-          }}
-        </span>
-      </div>
+<header class="topbar">
+  <div class="container topbar__inner">
+    <div class="topbar__brand">
+      <span class="topbar__mark">PAP</span>
+      <span class="topbar__name">{{ "header.title" | t }}</span>
     </div>
 
-    <nav class="app-header__actions" [attr.aria-label]="'header.actions' | t">
+    <nav class="topbar__actions" [attr.aria-label]="'header.actions' | t">
+      <span class="topbar__autosave">
+        <i class="pi pi-check-circle" aria-hidden="true"></i>
+        {{ "header.autosave" | t }}
+      </span>
       <p-select
         [options]="languageOptions"
         [(ngModel)]="currentLanguage"
@@ -33,12 +20,11 @@
         optionLabel="label"
         optionValue="value"
         appendTo="body"
+        styleClass="topbar__lang"
         [ariaLabel]="'header.languageAria' | t"
       >
         <ng-template pTemplate="selectedItem" let-selectedOption>
-          <span *ngIf="selectedOption"
-            >{{ selectedOption.flag }} {{ selectedOption.label }}</span
-          >
+          <span *ngIf="selectedOption">{{ selectedOption.flag }}</span>
         </ng-template>
         <ng-template pTemplate="item" let-option>
           <span>{{ option.flag }} {{ option.label }}</span>
@@ -46,20 +32,95 @@
       </p-select>
 
       <button
-        pButton
         type="button"
-        [icon]="currentTheme === 'light' ? 'pi pi-moon' : 'pi pi-sun'"
+        class="topbar__icon-btn"
         (click)="toggleTheme()"
-        class="theme-toggle-btn"
         [pTooltip]="'header.themeToggle' | t"
         tooltipPosition="bottom"
         [attr.aria-label]="'header.themeToggle' | t"
-      ></button>
+      >
+        <i
+          [class]="currentTheme === 'light' ? 'pi pi-moon' : 'pi pi-sun'"
+          aria-hidden="true"
+        ></i>
+      </button>
     </nav>
   </div>
 </header>
 
 <main class="container">
+  <!-- Felt letter board: who the plan is for, where the next food lands,
+       and the running totals. -->
+  <section class="board" [attr.aria-label]="'summary.totals' | t">
+    <div class="board__patient">
+      <span class="board__label">{{ "board.patient" | t }}</span>
+      <span class="board__letters board__patient-name">
+        {{ patientSessionData.name?.trim() || ("board.unnamedPatient" | t) }}
+      </span>
+      <span class="board__facts" *ngIf="patientFacts.length">
+        {{ patientFacts.join(" · ") }}
+      </span>
+    </div>
+
+    <div class="board__target">
+      <span class="board__label" id="board-target-label">
+        {{ "board.addingTo" | t }}
+      </span>
+      <div
+        class="board__meals"
+        role="radiogroup"
+        aria-labelledby="board-target-label"
+      >
+        <button
+          *ngFor="let meal of meals"
+          type="button"
+          role="radio"
+          class="board__meal"
+          [class.is-target]="meal.name === selectedMealName"
+          [attr.aria-checked]="meal.name === selectedMealName"
+          (click)="selectedMealName = meal.name"
+        >
+          {{ meal.name }}
+        </button>
+      </div>
+    </div>
+
+    <dl class="board__totals">
+      <div class="board__total board__total--kcal">
+        <dt class="board__label">{{ "board.energy" | t }} · kcal</dt>
+        <dd class="board__letters">{{ totalKcal | number: "1.0-0" }}</dd>
+      </div>
+      <div class="board__total">
+        <dt class="board__label">
+          <i class="swatch swatch--protein" aria-hidden="true"></i
+          >{{ "board.protShort" | t }} g
+        </dt>
+        <dd class="board__letters">{{ totalProtein | number: "1.1-1" }}</dd>
+      </div>
+      <div class="board__total">
+        <dt class="board__label">
+          <i class="swatch swatch--carbs" aria-hidden="true"></i
+          >{{ "board.carbShort" | t }} g
+        </dt>
+        <dd class="board__letters">{{ totalCarbs | number: "1.1-1" }}</dd>
+      </div>
+      <div class="board__total">
+        <dt class="board__label">
+          <i class="swatch swatch--fat" aria-hidden="true"></i
+          >{{ "board.fatShort" | t }} g
+        </dt>
+        <dd class="board__letters">{{ totalFat | number: "1.1-1" }}</dd>
+      </div>
+      <div class="board__total">
+        <dt class="board__label">
+          <i class="swatch swatch--fiber" aria-hidden="true"></i
+          >{{ "board.fiberShort" | t }} g
+        </dt>
+        <dd class="board__letters">{{ totalFiber | number: "1.1-1" }}</dd>
+      </div>
+    </dl>
+  </section>
+
   <app-patient-section
     [patientData]="patientSessionData"
     [startExpanded]="patientPanelExpanded"
@@ -103,3 +164,19 @@
     ></app-plan-summary>
   </div>
 </main>
+
+<!-- Phone: totals and the target meal stay in reach while scrolling. -->
+<div class="totals-dock" aria-hidden="true">
+  <span class="totals-dock__target">
+    <i class="pi pi-arrow-right" aria-hidden="true"></i>
+    {{ selectedMealName }}
+  </span>
+  <span class="totals-dock__kcal">
+    {{ totalKcal | number: "1.0-0" }}<small>kcal</small>
+  </span>
+  <span class="totals-dock__macros">
+    <span><i class="swatch swatch--protein"></i>{{ totalProtein | number: "1.0-0" }}</span>
+    <span><i class="swatch swatch--carbs"></i>{{ totalCarbs | number: "1.0-0" }}</span>
+    <span><i class="swatch swatch--fat"></i>{{ totalFat | number: "1.0-0" }}</span>
+  </span>
+</div>
