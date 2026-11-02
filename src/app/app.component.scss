@@ -2,167 +2,234 @@
   display: block;
   min-height: 100vh;
   background: var(--surface-ground);
-
-  --header-bg-start: #ffffff;
-  --header-bg-end: #f8fbff;
-  --header-radial: rgba(59, 130, 246, 0.08);
-  --header-border: #dbe7f5;
-  --header-shadow: 0 6px 18px rgb(15 23 42 / 0.06);
-
-  --header-title: #10243e;
-  --header-subtitle: #46607d;
-
-  --chip-bg: #f7fbff;
-  --chip-border: #d5e4f2;
-  --chip-text: #4a6380;
-  --chip-active-bg: #e8f4ff;
-  --chip-active-border: #89bee9;
-  --chip-active-text: #0b4b73;
-
-  --toggle-bg: #ffffff;
-  --toggle-bg-hover: #f3f9ff;
-  --toggle-border: #d5e4f2;
-  --toggle-text: #33506f;
 }
 
-:host-context([data-theme="dark"]) {
-  --header-bg-start: #0f172a;
-  --header-bg-end: #16253a;
-  --header-radial: rgba(96, 165, 250, 0.18);
-  --header-border: #2c3e55;
-  --header-shadow: 0 6px 18px rgb(2 6 23 / 0.35);
-
-  --header-title: #e7f1ff;
-  --header-subtitle: #bad4ef;
-
-  --chip-bg: rgba(11, 23, 38, 0.48);
-  --chip-border: rgba(148, 190, 224, 0.28);
-  --chip-text: #bad4ef;
-  --chip-active-bg: rgba(31, 122, 184, 0.25);
-  --chip-active-border: rgba(125, 191, 238, 0.45);
-  --chip-active-text: #e7f3ff;
-
-  --toggle-bg: #122035;
-  --toggle-bg-hover: #162a44;
-  --toggle-border: #355173;
-  --toggle-text: #cae5ff;
+/* Top bar — slim and quiet; the board below carries the identity. */
+.topbar {
+  background: var(--surface-section);
+  border-bottom: 1px solid var(--surface-border);
 }
 
-/* Header styles */
-.app-header {
-  position: sticky;
-  top: 0;
-  z-index: 50;
-  background:
-    linear-gradient(
-      180deg,
-      var(--header-bg-start) 0%,
-      var(--header-bg-end) 100%
-    ),
-    radial-gradient(circle at top right, var(--header-radial), transparent 48%);
-  border-bottom: 1px solid var(--header-border);
-  box-shadow: var(--header-shadow);
-}
-
-.app-header__container {
+.topbar__inner {
   display: flex;
-  align-items: flex-start;
+  align-items: center;
   justify-content: space-between;
-  gap: var(--spacing-xl);
-  padding-top: 0.85rem;
-  padding-bottom: 0.85rem;
+  gap: var(--spacing-lg);
+  min-height: 3.5rem;
 }
 
-.app-header__brand {
+.topbar__brand {
   display: flex;
-  flex-direction: column;
-  gap: var(--spacing-xs);
+  align-items: baseline;
+  gap: var(--spacing-md);
   min-width: 0;
-  flex: 1;
 }
 
-.app-header__title {
-  margin: 0;
+.topbar__mark {
   font-family: var(--font-family-display);
-  font-size: var(--title-size-page);
-  font-weight: var(--title-weight);
-  letter-spacing: -0.01em;
-  line-height: 1.2;
-  color: var(--header-title);
+  font-size: 1.5rem;
+  font-weight: var(--font-weight-bold);
+  letter-spacing: 0.04em;
+  color: var(--text-color);
 }
 
-.app-header__subtitle {
-  margin: 0;
-  color: var(--header-subtitle);
-  font-size: var(--subtitle-size);
-  font-weight: var(--subtitle-weight);
-}
-
-.app-header__meta {
-  display: flex;
-  align-items: center;
-  flex-wrap: wrap;
-  gap: var(--spacing-sm);
-  margin-top: var(--spacing-xs);
-}
-
-.meta-chip {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.4rem;
-  border: 1px solid var(--chip-border);
-  background: var(--chip-bg);
-  color: var(--chip-text);
-  border-radius: 999px;
-  padding: 0.26rem 0.62rem;
-  font-size: var(--font-size-xs);
+.topbar__name {
+  font-size: var(--font-size-sm);
   font-weight: var(--font-weight-medium);
+  color: var(--text-muted);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
-.meta-chip.is-active {
-  border-color: var(--chip-active-border);
-  color: var(--chip-active-text);
-  background: var(--chip-active-bg);
-}
-
-.app-header__actions {
+.topbar__actions {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: var(--spacing-sm);
   flex-shrink: 0;
 }
 
-/* Theme toggle button */
-.theme-toggle-btn {
-  min-width: var(--control-height);
-  min-height: var(--control-height);
-  padding: 0.5rem;
+.topbar__autosave {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  font-size: var(--font-size-xs);
+  color: var(--text-muted);
+  margin-right: var(--spacing-sm);
+}
+
+.topbar__autosave .pi {
+  color: var(--primary-color);
+  font-size: 0.8rem;
+}
+
+.topbar__icon-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: var(--control-height);
+  height: var(--control-height);
+  border: 1px solid var(--surface-border);
   border-radius: var(--radius-control);
-  border: 1px solid var(--toggle-border);
-  background: var(--toggle-bg);
-  color: var(--toggle-text);
-  box-shadow: var(--shadow-sm);
-  transition: all 0.2s ease;
+  background: var(--surface-section);
+  color: var(--text-color);
+  cursor: pointer;
+  transition: background-color 0.15s ease;
 }
 
-.theme-toggle-btn:hover {
-  background: var(--toggle-bg-hover);
-  transform: translateY(-1px);
+.topbar__icon-btn:hover {
+  background: var(--surface-hover);
 }
 
-/* Main content */
+/* Felt letter board */
+.board {
+  margin-top: var(--spacing-lg);
+  display: grid;
+  grid-template-columns: minmax(0, 1.1fr) minmax(0, 1.4fr) auto;
+  gap: var(--spacing-xl) var(--spacing-2xl);
+  align-items: start;
+  padding: 1.125rem 1.5rem 1.25rem;
+  border-radius: var(--radius-surface);
+  color: var(--felt-letter);
+  background-color: var(--felt);
+  /* The board's own grooves, where the plastic letters slot in. */
+  background-image: repeating-linear-gradient(
+    180deg,
+    transparent 0 22px,
+    var(--felt-groove) 22px 24px
+  );
+  box-shadow: 0 2px 6px rgb(20 28 24 / 0.18);
+}
+
+.board__label {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  margin: 0 0 0.3rem;
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-semibold);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--felt-muted);
+}
+
+.board__letters {
+  font-family: var(--font-family-display);
+  font-weight: var(--font-weight-semibold);
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  font-variant-numeric: tabular-nums;
+  line-height: 1.1;
+  color: var(--felt-letter);
+}
+
+.board__patient {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.board__patient-name {
+  font-size: 1.75rem;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.board__facts {
+  margin-top: 0.3rem;
+  font-size: var(--font-size-sm);
+  color: var(--felt-muted);
+  font-variant-numeric: tabular-nums;
+}
+
+.board__target {
+  min-width: 0;
+}
+
+.board__meals {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.375rem;
+}
+
+/* Each meal is a slotted letter strip; the target one is lit in mustard. */
+.board__meal {
+  min-height: 2.25rem;
+  padding: 0 0.75rem;
+  border: 1px solid rgb(244 241 232 / 0.22);
+  border-radius: var(--border-radius-sm);
+  background: var(--felt-raised);
+  color: var(--felt-letter);
+  font-family: var(--font-family-display);
+  font-size: 1.0625rem;
+  font-weight: var(--font-weight-semibold);
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  white-space: nowrap;
+  cursor: pointer;
+  transition:
+    background-color 0.15s ease,
+    border-color 0.15s ease,
+    color 0.15s ease;
+}
+
+.board__meal:hover {
+  border-color: rgb(244 241 232 / 0.5);
+}
+
+.board__meal.is-target {
+  background: var(--target);
+  border-color: var(--target);
+  color: var(--target-ink);
+}
+
+.board__meal:focus-visible {
+  outline: 2px solid var(--target);
+  outline-offset: 2px;
+}
+
+.board__totals {
+  display: flex;
+  gap: var(--spacing-xl);
+  margin: 0;
+}
+
+.board__total {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+}
+
+.board__total dd {
+  margin: 0;
+  font-size: 1.875rem;
+}
+
+.board__total--kcal dd {
+  font-size: 2.5rem;
+}
+
+.board__total--kcal .board__label {
+  color: var(--felt-letter);
+}
+
+/* Patient panel + editor */
+app-patient-section {
+  display: block;
+  margin-top: var(--spacing-md);
+}
+
 main {
-  flex: 1;
   display: block;
   padding-bottom: var(--spacing-2xl);
 }
 
-/* Editor: primary column + sticky totals rail */
 .editor-shell {
-  margin-top: var(--spacing-lg);
+  margin-top: var(--spacing-md);
   display: grid;
-  grid-template-columns: minmax(0, 1fr) 300px;
-  gap: var(--spacing-lg);
+  grid-template-columns: minmax(0, 1fr) 320px;
+  gap: var(--spacing-xl);
   align-items: start;
 }
 
@@ -170,21 +237,37 @@ main {
   min-width: 0;
   display: flex;
   flex-direction: column;
-  gap: var(--spacing-lg);
+  gap: var(--spacing-md);
 }
 
 .editor-rail {
   position: sticky;
-  top: calc(var(--control-height) + var(--spacing-2xl));
+  top: var(--spacing-lg);
   align-self: start;
 }
 
-app-patient-section {
-  display: block;
-  margin-top: var(--spacing-lg);
+.totals-dock {
+  display: none;
 }
 
-/* Responsive adjustments */
+/* Tablet: board stacks totals under patient/target; rail drops below. */
+@media (max-width: 1100px) {
+  .board {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1.4fr);
+  }
+
+  .board__totals {
+    grid-column: 1 / -1;
+    justify-content: space-between;
+    padding-top: var(--spacing-md);
+    border-top: 1px solid rgb(244 241 232 / 0.14);
+  }
+
+  .board__total {
+    align-items: flex-start;
+  }
+}
+
 @media (max-width: 1023px) {
   .editor-shell {
     grid-template-columns: 1fr;
@@ -195,36 +278,123 @@ app-patient-section {
   }
 }
 
+/* Phone: compact board, totals move to a dock pinned to the bottom. */
 @media (max-width: 767px) {
-  .container {
-    padding-left: var(--spacing-sm);
-    padding-right: var(--spacing-sm);
+  .topbar__name,
+  .topbar__autosave {
+    display: none;
   }
 
-  /* The header is tall once stacked; don't let it pin over the editor. */
-  .app-header {
-    position: static;
-  }
-
-  .app-header__container {
-    flex-direction: column;
-    align-items: stretch;
+  .board {
+    grid-template-columns: 1fr;
     gap: var(--spacing-md);
+    margin-top: var(--spacing-sm);
+    padding: 0.875rem 1rem 1rem;
   }
 
-  .app-header__actions {
-    justify-content: space-between;
+  .board__patient-name {
+    font-size: 1.375rem;
+  }
+
+  .board__meals {
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    scrollbar-width: none;
+    margin: 0 -1rem;
+    padding: 0 1rem 2px;
+    scroll-padding-inline: 1rem;
+  }
+
+  .board__meals::-webkit-scrollbar {
+    display: none;
+  }
+
+  .board__meal {
+    min-height: 2.75rem;
+  }
+
+  .board__totals {
+    display: none;
+  }
+
+  main {
+    padding-bottom: 5.5rem;
+  }
+
+  .totals-dock {
+    position: fixed;
+    inset: auto 0 0 0;
+    z-index: 40;
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-md);
+    padding: 0.625rem 1rem calc(0.625rem + env(safe-area-inset-bottom));
+    background: var(--felt);
+    color: var(--felt-letter);
+    box-shadow: 0 -2px 8px rgb(20 28 24 / 0.2);
+  }
+
+  .totals-dock__target {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    min-width: 0;
+    padding: 0.25rem 0.5rem;
+    border-radius: var(--border-radius-sm);
+    background: var(--target);
+    color: var(--target-ink);
+    font-family: var(--font-family-display);
+    font-weight: var(--font-weight-semibold);
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .totals-dock__target .pi {
+    font-size: 0.7rem;
+  }
+
+  .totals-dock__kcal {
+    margin-left: auto;
+    font-family: var(--font-family-display);
+    font-size: 1.5rem;
+    font-weight: var(--font-weight-semibold);
+    font-variant-numeric: tabular-nums;
+    white-space: nowrap;
+  }
+
+  .totals-dock__kcal small {
+    margin-left: 0.2rem;
+    font-family: var(--font-family);
+    font-size: var(--font-size-xs);
+    color: var(--felt-muted);
+  }
+
+  .totals-dock__macros {
+    display: flex;
+    gap: 0.6rem;
+    font-size: var(--font-size-sm);
+    font-variant-numeric: tabular-nums;
+  }
+
+  .totals-dock__macros span {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.25rem;
+  }
+}
+
+@media (max-width: 380px) {
+  .totals-dock__macros {
+    display: none;
   }
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .theme-toggle-btn {
+  .board__meal,
+  .topbar__icon-btn {
     transition: none;
   }
-}
-
-/* Accessibility improvements */
-.btn:focus-visible {
-  outline: 2px solid var(--primary-color);
-  outline-offset: 2px;
 }

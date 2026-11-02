@@ -1,9 +1,19 @@
 import { CommonModule } from '@angular/common';
-import { Component, EventEmitter, Input, Output } from '@angular/core';
+import {
+  Component,
+  ElementRef,
+  EventEmitter,
+  Input,
+  NgZone,
+  OnChanges,
+  OnDestroy,
+  Output,
+  SimpleChanges,
+  ViewChild,
+} from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { ConfirmationService } from 'primeng/api';
 import { ButtonModule } from 'primeng/button';
-import { CardModule } from 'primeng/card';
 import { DividerModule } from 'primeng/divider';
 import { InputNumberModule } from 'primeng/inputnumber';
 import { InputTextModule } from 'primeng/inputtext';
@@ -18,7 +28,6 @@ import { I18nService } from '../../services/i18n.service';
 const DIET_BUILDER_IMPORTS = [
   CommonModule,
   FormsModule,
-  CardModule,
   InputTextModule,
   InputNumberModule,
   ButtonModule,
@@ -28,6 +37,9 @@ const DIET_BUILDER_IMPORTS = [
   TranslatePipe,
 ];
 
+/** Below this width meals sit side by side in a snap track, one per screen. */
+const SWIPE_MEDIA = '(max-width: 767px)';
+
 @Component({
   selector: 'app-diet-builder',
   standalone: true,
@@ -35,7 +47,7 @@ const DIET_BUILDER_IMPORTS = [
   templateUrl: './diet-builder.component.html',
   styleUrls: ['./diet-builder.component.scss'],
 })
-export class DietBuilderComponent {
+export class DietBuilderComponent implements OnChanges, OnDestroy {
   @Input() meals: Meal[] = [];
   @Input() selectedMealName = '';
 
@@ -61,10 +73,60 @@ export class DietBuilderComponent {
   addingMeal = false;
   newMealName = '';
 
+  @ViewChild('mealsTrack') private mealsTrack?: ElementRef<HTMLElement>;
+  private scrollSettleTimer?: ReturnType<typeof setTimeout>;
+
   constructor(
     private confirmationService: ConfirmationService,
     private i18nService: I18nService,
+    private zone: NgZone,
   ) {}
+
+  ngOnChanges(changes: SimpleChanges): void {
+    if (changes['selectedMealName'] || changes['meals']) {
+      // Wait for the DOM to reflect new meals before scrolling.
+      setTimeout(() => this.scrollTargetIntoView());
+    }
+  }
+
+  ngOnDestroy(): void {
+    clearTimeout(this.scrollSettleTimer);
+  }
+
+  private get isSwipeLayout(): boolean {
+    return (
+      typeof window !== 'undefined' && window.matchMedia(SWIPE_MEDIA).matches
+    );
+  }
+
+  /** Phone: keep the target meal on screen when it changes elsewhere. */
+  private scrollTargetIntoView(): void {
+    const track = this.mealsTrack?.nativeElement;
+    if (!track || !this.isSwipeLayout) return;
+    const index = this.meals.findIndex((m) => m.name === this.selectedMealName);
+    if (index < 0) return;
+    const left = index * track.clientWidth;
+    if (Math.abs(track.scrollLeft - left) < 4) return;
+    const reduceMotion = window.matchMedia(
+      '(prefers-reduced-motion: reduce)',
+    ).matches;
+    track.scrollTo({ left, behavior: reduceMotion ? 'auto' : 'smooth' });
+  }
+
+  /** Phone: the meal a swipe settles on becomes the target. */
+  onTrackScroll(): void {
+    clearTimeout(this.scrollSettleTimer);
+    this.scrollSettleTimer = setTimeout(() => {
+      const track = this.mealsTrack?.nativeElement;
+      if (!track || !this.isSwipeLayout || !track.clientWidth) return;
+      // A scroll we started lands on the target itself, so it emits nothing.
+      const index = Math.round(track.scrollLeft / track.clientWidth);
+      const meal = this.meals[index];
+      if (meal && meal.name !== this.selectedMealName) {
+        this.zone.run(() => this.mealTargeted.emit(meal.name));
+      }
+    }, 120);
+  }
 
   onItemInputChange(mealIndex: number, itemIndex: number): void {
     this.itemChanged.emit({ mealIndex, itemIndex });

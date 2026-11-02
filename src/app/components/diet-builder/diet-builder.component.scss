@@ -2,105 +2,404 @@
   display: block;
 }
 
-.builder-title {
-  margin: 0 0 var(--spacing-md) 0;
-}
-
 .builder-no-meals {
   color: var(--text-muted);
-  font-style: italic;
   margin: 0;
 }
 
-/* Meals container — one meal per row, always, at any viewport width. */
 .meals-container {
   display: flex;
   flex-direction: column;
-  gap: var(--spacing-lg);
+  gap: var(--spacing-md);
 }
 
-/* Meal cards */
-.meal-column-card {
+/* Meal — a section of the menu. The target meal is the only one lit. */
+.meal {
+  background: var(--surface-section);
+  border: 1px solid var(--surface-border);
+  border-radius: var(--radius-surface);
+  overflow: hidden;
+  transition:
+    border-color 0.15s ease,
+    box-shadow 0.15s ease;
+}
+
+.meal.is-target {
+  border-color: var(--target);
+  box-shadow: inset 0 3px 0 var(--target);
+}
+
+.meal__head {
   display: flex;
-  width: 100%;
+  flex-direction: column;
+  gap: 0.375rem;
+  padding: 0.75rem 1.125rem 0.625rem;
+  border-bottom: 1px solid var(--surface-border);
 }
 
-/* Target-meal controls */
-.meal-target-flag {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.3rem;
+.meal__title-row {
+  display: flex;
+  align-items: baseline;
+  gap: var(--spacing-md);
+  min-width: 0;
+}
+
+.meal__title {
+  margin: 0;
+  min-width: 0;
+  font-family: var(--font-family-display);
+  font-size: 1.375rem;
+  font-weight: var(--font-weight-bold);
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  line-height: 1.15;
+  color: var(--text-color);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.meal__target-flag {
+  flex-shrink: 0;
+  padding: 0.125rem 0.5rem;
+  border-radius: var(--border-radius-sm);
+  background: var(--target);
+  color: var(--target-ink);
   font-size: var(--font-size-xs);
   font-weight: var(--font-weight-semibold);
   letter-spacing: 0.06em;
   text-transform: uppercase;
-  color: var(--primary-color);
-  background: transparent;
-  border: none;
-  border-radius: 0;
-  padding: 0;
   white-space: nowrap;
 }
 
-.meal-header-actions ::ng-deep .meal-target-btn {
-  padding: 0.2rem 0.45rem;
+.meal__position {
+  display: none;
 }
 
-.meal-header-actions ::ng-deep .meal-target-btn .p-button-label,
-.meal-header-icons ::ng-deep .p-button .p-button-label {
-  font-size: var(--font-size-xs);
-  font-weight: var(--font-weight-medium);
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
-  color: var(--text-light);
-}
-
-.meal-header-icons ::ng-deep .p-button {
-  padding: 0.2rem 0.4rem;
-}
-
-.meal-header-icons ::ng-deep .meal-edit-btn:hover .p-button-label {
+.meal__kcal {
+  margin-left: auto;
+  font-family: var(--font-family-display);
+  font-size: 1.375rem;
+  font-weight: var(--font-weight-semibold);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
   color: var(--text-color);
 }
 
-.meal-header-icons ::ng-deep .meal-delete-btn:hover .p-button-label {
+.meal__kcal small {
+  margin-left: 0.2rem;
+  font-family: var(--font-family);
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-medium);
+  color: var(--text-muted);
+}
+
+.meal__meta {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: var(--spacing-xs) var(--spacing-lg);
+  min-height: 2rem;
+}
+
+.meal__macros {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.25rem 0.875rem;
+  font-size: var(--font-size-sm);
+  color: var(--text-muted);
+  font-variant-numeric: tabular-nums;
+}
+
+.meal__macros > span {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  white-space: nowrap;
+}
+
+.meal__actions {
+  display: flex;
+  align-items: center;
+  gap: 0.125rem;
+  margin-left: auto;
+}
+
+.meal__action {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  min-height: 2rem;
+  padding: 0 0.5rem;
+  border: none;
+  border-radius: var(--border-radius-sm);
+  background: transparent;
+  color: var(--text-muted);
+  font-family: inherit;
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-medium);
+  cursor: pointer;
+  transition:
+    background-color 0.15s ease,
+    color 0.15s ease;
+}
+
+.meal__action:hover {
+  background: var(--surface-hover);
+  color: var(--text-color);
+}
+
+.meal__action--target {
+  color: var(--text-color);
+  border: 1px solid var(--surface-border);
+}
+
+.meal__action--target:hover {
+  background: var(--target-soft);
+  border-color: var(--target);
+}
+
+.meal__action--target .pi {
+  font-size: 0.7rem;
+}
+
+.meal__action--danger:hover {
+  background: rgb(var(--error-rgb) / 0.1);
   color: var(--error-color);
+}
+
+.meal__edit {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+}
+
+.meal__edit-input {
+  flex: 1;
+  min-width: 0;
+}
+
+/* Items — menu rows: quantity, name with a dotted leader, measure, kcal. */
+.meal__body {
+  padding: 0.25rem 1.125rem 0.75rem;
+}
+
+.meal__cols,
+.item {
+  display: grid;
+  grid-template-columns: 7.25rem minmax(0, 1fr) minmax(9rem, 14rem) 3.5rem 2.25rem;
+  gap: var(--spacing-md);
+  align-items: center;
+}
+
+.meal__cols {
+  padding: 0.5rem 0 0.25rem;
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-semibold);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
+
+.meal__cols-kcal {
+  text-align: right;
+}
+
+.item {
+  padding: 0.375rem 0;
+  border-top: 1px dotted var(--surface-border);
+}
+
+.item__name {
+  display: flex;
+  align-items: baseline;
+  gap: var(--spacing-sm);
+  min-width: 0;
+  font-size: var(--font-size-base);
+  font-weight: var(--font-weight-medium);
+  color: var(--text-color);
+}
+
+.item__name span {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.item__name::after {
+  content: "";
+  flex: 1 1 1.5rem;
+  min-width: 1.5rem;
+  border-bottom: 2px dotted var(--surface-border);
+  transform: translateY(-0.25rem);
+}
+
+.item__kcal {
+  text-align: right;
+  font-size: var(--font-size-base);
+  font-weight: var(--font-weight-semibold);
+  font-variant-numeric: tabular-nums;
+  color: var(--text-color);
+}
+
+/* Quantity: the biggest number in the row. */
+.item__qty ::ng-deep .p-inputnumber {
+  width: 100%;
+  --p-inputnumber-button-width: 1.875rem;
+}
+
+.item__qty ::ng-deep .p-inputnumber-input {
+  width: 100%;
+  min-width: 0;
+  padding: 0 0.125rem;
+  text-align: center;
+  font-family: var(--font-family-display);
+  font-size: 1.25rem !important;
+  font-weight: var(--font-weight-semibold);
+  font-variant-numeric: tabular-nums;
+  border-radius: 0 !important;
+}
+
+.item__qty ::ng-deep .p-inputnumber-button {
+  border: 1px solid var(--surface-border);
+  background: var(--surface-section);
+  color: var(--text-muted);
+}
+
+.item__qty ::ng-deep .p-inputnumber-decrement-button {
+  border-radius: var(--radius-control) 0 0 var(--radius-control);
+  border-right: 0;
+}
+
+.item__qty ::ng-deep .p-inputnumber-increment-button {
+  border-radius: 0 var(--radius-control) var(--radius-control) 0;
+  border-left: 0;
+}
+
+.item__qty ::ng-deep .p-inputnumber-button:hover {
+  background: var(--surface-hover);
+  color: var(--text-color);
+}
+
+/* Measure: a quiet underline, not a boxed dropdown. */
+.item__measure ::ng-deep .p-select {
+  width: 100%;
+  min-width: 0 !important;
+  border: none !important;
+  border-bottom: 1px solid var(--surface-border) !important;
+  border-radius: 0 !important;
+  background: transparent !important;
+  box-shadow: none !important;
+}
+
+.item__measure ::ng-deep .p-select.p-focus,
+.item__measure ::ng-deep .p-select:focus-within {
+  border-bottom-color: var(--primary-color) !important;
+}
+
+.item__measure ::ng-deep .p-select-label {
+  min-width: 0;
+  padding-left: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  background: transparent !important;
+  color: var(--text-muted) !important;
+  font-size: var(--font-size-sm);
+}
+
+/* Small square icon buttons shared by rows and inline forms */
+.icon-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.25rem;
+  height: 2.25rem;
+  border: none;
+  border-radius: var(--radius-control);
+  background: transparent;
+  color: var(--text-muted);
+  cursor: pointer;
+  transition:
+    background-color 0.15s ease,
+    color 0.15s ease;
+}
+
+.icon-btn:hover {
+  background: var(--surface-hover);
+  color: var(--text-color);
+}
+
+.icon-btn--remove:hover {
+  background: rgb(var(--error-rgb) / 0.1);
+  color: var(--error-color);
+}
+
+.icon-btn--confirm {
+  background: var(--felt);
+  color: var(--felt-letter);
+}
+
+.icon-btn--confirm:hover {
+  background: var(--felt-raised);
+  color: var(--felt-letter);
+}
+
+.icon-btn .pi {
+  font-size: 0.8rem;
+}
+
+/* Empty meal teaches the flow instead of just saying "empty". */
+.meal__empty {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: var(--spacing-sm);
+  margin-top: var(--spacing-sm);
+  padding: var(--spacing-md);
+  border: 1px dashed var(--surface-border);
+  border-radius: var(--border-radius);
+  color: var(--text-muted);
+  font-size: var(--font-size-sm);
 }
 
 /* Add-meal affordance */
 .add-meal-row {
-  margin-top: var(--spacing-lg);
+  margin-top: var(--spacing-md);
 }
 
 .add-meal-btn {
   display: inline-flex;
   align-items: center;
+  justify-content: center;
   gap: var(--spacing-sm);
   width: 100%;
-  justify-content: center;
-  padding: var(--spacing-md);
+  min-height: 3rem;
   background: transparent;
   border: 1px dashed var(--surface-border);
   border-radius: var(--radius-surface);
   color: var(--text-muted);
-  font-size: var(--control-font-size);
+  font-family: inherit;
+  font-size: var(--font-size-sm);
   font-weight: var(--font-weight-medium);
   cursor: pointer;
   transition:
-    color 0.2s ease,
-    border-color 0.2s ease;
+    color 0.15s ease,
+    border-color 0.15s ease;
 }
 
 .add-meal-btn:hover {
-  color: var(--primary-color);
-  border-color: var(--primary-color);
+  color: var(--text-color);
+  border-color: var(--text-muted);
 }
 
 .add-meal-form {
   display: flex;
-  align-items: stretch;
+  align-items: center;
   gap: var(--spacing-sm);
-  max-width: 420px;
+  max-width: 28rem;
 }
 
 .add-meal-form input {
@@ -108,390 +407,125 @@
   min-width: 0;
 }
 
+@media (max-width: 1200px) {
+  .meal__cols,
+  .item {
+    grid-template-columns: 7rem minmax(0, 1fr) minmax(8rem, 11rem) 3.25rem 2.25rem;
+  }
+}
+
+/* Phone: one meal per screen in a snap track; swiping changes the target. */
+@media (max-width: 767px) {
+  .meals-container {
+    flex-direction: row;
+    gap: 0;
+    overflow-x: auto;
+    scroll-snap-type: x mandatory;
+    overscroll-behavior-x: contain;
+    scrollbar-width: none;
+  }
+
+  .meals-container::-webkit-scrollbar {
+    display: none;
+  }
+
+  .meal {
+    flex: 0 0 100%;
+    min-width: 0;
+    scroll-snap-align: start;
+    scroll-snap-stop: always;
+    margin-right: 0;
+  }
+
+  .meal__head,
+  .meal__body {
+    padding-left: 0.875rem;
+    padding-right: 0.875rem;
+  }
+
+  .meal__position {
+    display: inline;
+    flex-shrink: 0;
+    font-size: var(--font-size-xs);
+    color: var(--text-muted);
+    font-variant-numeric: tabular-nums;
+  }
+
+  .meal__target-flag {
+    display: none;
+  }
+
+  .meal__actions {
+    margin-left: 0;
+    width: 100%;
+    justify-content: flex-end;
+  }
+
+  .meal__action--target {
+    margin-right: auto;
+  }
+
+  .meal__cols {
+    display: none;
+  }
+
+  .item {
+    grid-template-columns: 7.5rem minmax(0, 1fr) 2.75rem;
+    grid-template-areas:
+      "name name remove"
+      "qty measure kcal";
+    gap: 0.375rem var(--spacing-sm);
+    padding: 0.625rem 0;
+  }
+
+  .item__name {
+    grid-area: name;
+  }
+
+  .item__name span {
+    white-space: normal;
+  }
+
+  .item__name::after {
+    display: none;
+  }
+
+  .item__qty {
+    grid-area: qty;
+  }
+
+  .item__measure {
+    grid-area: measure;
+    min-width: 0;
+  }
+
+  .icon-btn--remove {
+    justify-self: end;
+  }
+
+  .item__kcal {
+    grid-area: kcal;
+  }
+
+  .icon-btn--remove {
+    grid-area: remove;
+  }
+
+  .item__qty ::ng-deep .p-inputnumber {
+    --p-inputnumber-button-width: 2.25rem;
+  }
+
+  .item__qty ::ng-deep .p-inputnumber-input,
+  .item__qty ::ng-deep .p-inputnumber-button {
+    min-height: 2.75rem;
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
+  .meal,
+  .meal__action,
+  .icon-btn,
   .add-meal-btn {
     transition: none;
   }
-}
-
-.meal-card {
-  width: 100%;
-  min-height: 260px;
-  display: flex;
-  flex-direction: column;
-  background: var(--surface-section);
-  border-top: 4px solid var(--text-color);
-  border-radius: 0;
-  box-shadow: none;
-  overflow: hidden;
-}
-
-.meal-column-card.is-target .meal-card {
-  border-top-color: var(--primary-color);
-}
-
-.meal-card ::ng-deep .p-card-header {
-  background: var(--surface-section);
-  border-bottom: 1px solid var(--surface-border);
-  padding: var(--spacing-md) var(--spacing-lg);
-}
-
-.meal-card ::ng-deep .p-card-body {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  padding: 0;
-  background: var(--surface-section);
-}
-
-.meal-card ::ng-deep .p-card-content {
-  flex: 1;
-  padding: var(--spacing-lg);
-  background: var(--surface-section);
-}
-
-/* Meal header — two rows: name + kcal on top, target/edit/delete below,
-   matching the nutrition-label header grammar. */
-.meal-card-header-content {
-  display: block;
-}
-
-.meal-header-view {
-  display: flex;
-  flex-direction: column;
-  gap: 0.45rem;
-  min-width: 0;
-}
-
-.meal-header-top {
-  display: flex;
-  align-items: baseline;
-  justify-content: space-between;
-  gap: var(--spacing-sm);
-}
-
-.meal-title {
-  font-family: var(--font-family-display);
-  font-size: 0.92rem;
-  text-transform: uppercase;
-  letter-spacing: 0.01em;
-  color: var(--text-color);
-  margin: 0;
-  min-width: 0;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-.meal-kcal {
-  font-family: var(--font-family-mono);
-  font-variant-numeric: tabular-nums;
-  font-size: var(--font-size-sm);
-  font-weight: var(--font-weight-medium);
-  color: var(--text-muted);
-  background: transparent;
-  padding: 0;
-  border: none;
-  white-space: nowrap;
-}
-
-.meal-macros {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.6rem;
-  font-size: var(--font-size-xs);
-  color: var(--text-muted);
-}
-
-.meal-macro {
-  white-space: nowrap;
-}
-
-.meal-header-actions {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  flex-wrap: wrap;
-  gap: var(--spacing-xs);
-}
-
-.meal-header-icons {
-  display: flex;
-  align-items: center;
-  gap: var(--spacing-xs);
-  margin-left: auto;
-}
-
-.meal-header-edit {
-  display: flex;
-  align-items: center;
-  gap: var(--spacing-sm);
-  flex: 1;
-}
-
-.edit-meal-name-input {
-  flex: 1;
-}
-
-/* Diet items */
-.meal-items-list {
-  display: flex;
-  flex-direction: column;
-  gap: var(--spacing-sm);
-  background: var(--surface-section);
-}
-
-.diet-item {
-  display: grid;
-  grid-template-columns: 160px 132px minmax(110px, 300px) 66px 36px;
-  gap: var(--spacing-sm);
-  align-items: center;
-  padding: var(--spacing-sm) 0;
-  border-bottom: 1px solid var(--surface-border);
-}
-
-.diet-item:last-child {
-  border-bottom: none;
-}
-
-.item-name {
-  font-weight: var(--font-weight-medium);
-  color: var(--text-color);
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-  min-width: 0;
-}
-
-.diet-item > * {
-  min-width: 0;
-}
-
-.item-qty,
-.item-measure {
-  display: flex;
-  align-items: center;
-  min-width: 0;
-  overflow: hidden;
-}
-
-.item-qty {
-  padding-right: var(--spacing-sm);
-}
-
-.item-measure {
-  padding-left: var(--spacing-sm);
-}
-
-.item-qty ::ng-deep p-inputNumber,
-.item-measure ::ng-deep p-select {
-  width: 100%;
-  min-width: 0 !important;
-  max-width: 100%;
-}
-
-/* Horizontal +/- buttons (not the default stacked overlay) so they sit
-   beside the typed number in normal flow instead of floating on top of
-   it — narrowed too, so the qty column stays compact. */
-.item-qty ::ng-deep .p-inputnumber {
-  --p-inputnumber-button-width: 1.15rem;
-}
-
-/* Small bordered squares instead of PrimeNG's default filled buttons —
-   quiet chrome that matches the label's flat, rule-based controls. */
-.item-qty ::ng-deep .p-inputnumber-button {
-  border: 1px solid var(--surface-border);
-  border-radius: 3px;
-  background: var(--surface-section);
-  color: var(--text-muted);
-}
-
-.item-qty ::ng-deep .p-inputnumber-button:hover {
-  border-color: var(--text-muted);
-  background: var(--surface-section);
-  color: var(--text-color);
-}
-
-.item-qty ::ng-deep .p-inputnumber,
-.item-measure ::ng-deep .p-select {
-  width: 100%;
-  min-width: 0 !important;
-  max-width: 100%;
-  min-height: var(--control-height);
-}
-
-.item-qty ::ng-deep .p-inputnumber-input,
-.item-measure ::ng-deep .p-select-label {
-  width: 100%;
-  min-width: 0;
-  max-width: 100%;
-  min-height: var(--control-height);
-  display: flex;
-  align-items: center;
-}
-
-.item-qty ::ng-deep .p-inputnumber-input {
-  padding-left: 3px;
-  padding-right: 3px;
-  text-align: center;
-  font-family: var(--font-family-mono);
-  font-variant-numeric: tabular-nums;
-}
-
-.item-measure ::ng-deep .p-select-label {
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-.item-qty ::ng-deep p-inputNumber input,
-.item-measure ::ng-deep p-select .p-select-label {
-  font-size: var(--font-size-sm);
-}
-
-.item-qty ::ng-deep .p-inputnumber,
-.item-qty ::ng-deep .p-inputnumber-input,
-.item-measure ::ng-deep .p-select,
-.item-measure ::ng-deep .p-select-label,
-.edit-meal-name-input {
-  background: var(--surface-section);
-  color: var(--text-color);
-  border-color: var(--surface-border);
-}
-
-/* Measure is a plain underline, not a boxed dropdown — quieter than the
-   quantity field, which stays a real editable box. */
-.item-measure ::ng-deep .p-select {
-  border: none;
-  border-bottom: 1px solid var(--surface-border);
-  border-radius: 0;
-  background: transparent;
-}
-
-.item-measure ::ng-deep .p-select:not(.p-disabled).p-focus {
-  border-bottom-color: var(--primary-color);
-  box-shadow: none;
-}
-
-.item-qty ::ng-deep .p-inputnumber-input:focus,
-.edit-meal-name-input:focus {
-  border-color: var(--primary-color);
-  box-shadow: 0 0 0 3px rgb(var(--primary-rgb) / 0.1);
-}
-
-.item-measure ::ng-deep .p-select:focus-within {
-  border-bottom-color: var(--primary-color);
-  box-shadow: none;
-}
-
-.item-kcal {
-  text-align: center;
-  font-family: var(--font-family-mono);
-  font-variant-numeric: tabular-nums;
-  font-weight: var(--font-weight-medium);
-  color: var(--text-muted);
-  font-size: var(--font-size-sm);
-}
-
-.item-actions {
-  display: flex;
-  justify-content: flex-end;
-  align-items: center;
-  width: 36px;
-  min-width: 36px;
-  margin-left: 0;
-}
-
-.item-remove-btn {
-  display: inline-flex !important;
-  align-items: center;
-  justify-content: center;
-  width: 2rem;
-  height: 2rem;
-  min-width: 2rem;
-  min-height: 2rem;
-  opacity: 1;
-  visibility: visible;
-}
-
-/* Empty state */
-.empty-meal-message {
-  background: var(--surface-section);
-  border: 1px dashed var(--surface-border);
-  border-radius: var(--border-radius);
-  text-align: center;
-  color: var(--text-muted);
-  font-style: italic;
-  padding: var(--spacing-lg);
-}
-
-/* Responsive design — wider breakpoints first so narrower ones win the cascade */
-@media (max-width: 1200px) {
-  .diet-item {
-    grid-template-columns: 130px 128px minmax(96px, 220px) 60px 36px;
-  }
-}
-
-@media (max-width: 768px) {
-  .meals-container {
-    gap: var(--spacing-md);
-  }
-
-  /* Row becomes a labelled stack: name on top, then one field per line. */
-  .diet-item {
-    display: flex;
-    flex-direction: column;
-    gap: var(--spacing-sm);
-    padding: var(--spacing-md);
-    border: 1px solid var(--surface-border);
-    border-radius: var(--border-radius);
-  }
-
-  .item-name {
-    font-size: var(--font-size-lg);
-    white-space: normal;
-    text-align: left;
-  }
-
-  .item-qty,
-  .item-measure,
-  .item-kcal {
-    display: flex;
-    flex-direction: column;
-    align-items: stretch;
-    gap: var(--spacing-xs);
-    width: 100%;
-    padding: 0;
-  }
-
-  .item-qty::before,
-  .item-measure::before,
-  .item-kcal::before {
-    content: attr(data-label);
-    font-size: var(--font-size-xs);
-    font-weight: var(--font-weight-medium);
-    color: var(--text-muted);
-  }
-
-  .item-kcal {
-    text-align: left;
-  }
-
-  .item-actions {
-    justify-content: flex-end;
-    width: 100%;
-  }
-}
-
-@media (max-width: 480px) {
-  .meal-card ::ng-deep .p-card-header,
-  .meal-card ::ng-deep .p-card-content {
-    padding: var(--spacing-md);
-  }
-}
-
-.meal-item-measure-dropdown {
-  margin-left: 0;
-  padding: 1px;
-  width: 100%;
 }

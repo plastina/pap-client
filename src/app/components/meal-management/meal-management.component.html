@@ -1,5 +1,7 @@
 <div class="food-search-card">
+  <label class="sr-only" for="foodAutocomplete">{{ "meal.search.title" | t }}</label>
   <div class="autocomplete-wrapper p-fluid">
+    <i class="pi pi-search food-search-card__icon" aria-hidden="true"></i>
     <p-autoComplete
       inputId="foodAutocomplete"
       [(ngModel)]="selectedFoodAutoComplete"
@@ -16,17 +18,22 @@
     >
       <ng-template pTemplate="item" let-foodSuggestion>
         <div class="autocomplete-suggestion-item">
-          <div>{{ foodSuggestion.name }}</div>
-          <small *ngIf="foodSuggestion.source">[{{ foodSuggestion.source }}]</small>
-          <small *ngIf="foodSuggestion.energy_kcal">
-            - {{ foodSuggestion.energy_kcal | number: "1.0-0" }} kcal/100{{ foodSuggestion.unit === "ml" ? "mL" : "g" }}
+          <span class="autocomplete-suggestion-item__name">{{ foodSuggestion.name }}</span>
+          <small *ngIf="foodSuggestion.source" class="autocomplete-suggestion-item__source">{{ foodSuggestion.source }}</small>
+          <small *ngIf="foodSuggestion.energy_kcal" class="autocomplete-suggestion-item__kcal">
+            {{ foodSuggestion.energy_kcal | number: "1.0-0" }} kcal/100{{ foodSuggestion.unit === "ml" ? "mL" : "g" }}
           </small>
         </div>
       </ng-template>
     </p-autoComplete>
-    <span class="food-search-card__target">
+    <span
+      class="food-search-card__target"
+      [class.is-empty]="!selectedMealName"
+      aria-live="polite"
+    >
       <ng-container *ngIf="selectedMealName; else noTarget">
-        {{ "meal.search.target" | t: { mealName: selectedMealName } }}
+        <i class="pi pi-arrow-right" aria-hidden="true"></i>
+        {{ selectedMealName }}
       </ng-container>
       <ng-template #noTarget>{{ "meal.search.noTarget" | t }}</ng-template>
     </span>

@@ -13,7 +13,12 @@
         <span class="unit">kcal</span>
       </span>
     </div>
-    <hr class="rule-thick" />
+    <hr class="rule-thin" />
+    <div class="macro-bar" aria-hidden="true">
+      <span class="macro-bar__seg swatch--protein" [style.flex-grow]="totalProtein * 4"></span>
+      <span class="macro-bar__seg swatch--carbs" [style.flex-grow]="totalCarbs * 4"></span>
+      <span class="macro-bar__seg swatch--fat" [style.flex-grow]="totalFat * 9"></span>
+    </div>
 
     <div class="macro-row">
       <span class="label"
