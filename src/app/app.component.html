@@ -127,10 +127,12 @@
     (patientDataChange)="onPatientDataChange()"
   ></app-patient-section>
 
+  <app-professional-section></app-professional-section>
+
   <div class="editor-shell">
     <div class="editor-primary">
       <app-meal-management
-        [selectedMealName]="selectedMealName"
+        [selectedMealName]="targetLabel"
         [foodSearchSuggestions]="foodSearchSuggestions"
         [selectedFoodAutoComplete]="selectedFoodAutoComplete"
         (foodSearch)="searchFoodsByTerm($event)"
@@ -140,11 +142,15 @@
       <app-diet-builder
         [meals]="meals"
         [selectedMealName]="selectedMealName"
+        [selectedOptionIndex]="selectedOptionIndex"
         (itemRemoved)="handleRemoveFood($event)"
         (itemChanged)="handleItemChange($event)"
         (mealNameChanged)="handleMealNameChange($event)"
         (mealDeleted)="handleMealDelete($event)"
         (mealTargeted)="selectedMealName = $event"
+        (optionTargeted)="selectTarget($event)"
+        (optionAdded)="addOption($event)"
+        (optionRemoved)="removeOption($event)"
         (mealAdded)="addMeal($event)"
       ></app-diet-builder>
     </div>
@@ -169,7 +175,7 @@
 <div class="totals-dock" aria-hidden="true">
   <span class="totals-dock__target">
     <i class="pi pi-arrow-right" aria-hidden="true"></i>
-    {{ selectedMealName }}
+    {{ targetLabel }}
   </span>
   <span class="totals-dock__kcal">
     {{ totalKcal | number: "1.0-0" }}<small>kcal</small>

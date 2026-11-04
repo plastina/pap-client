@@ -20,7 +20,7 @@ import { InputTextModule } from 'primeng/inputtext';
 import { SelectModule } from 'primeng/select';
 import { TooltipModule } from 'primeng/tooltip';
 import { DietItem } from '../../models/diet-item.model';
-import { Meal } from '../../models/meal.model';
+import { Meal, optionItems } from '../../models/meal.model';
 import { Measure } from '../../models/measure.model';
 import { TranslatePipe } from '../../pipes/t.pipe';
 import { I18nService } from '../../services/i18n.service';
@@ -37,6 +37,12 @@ const DIET_BUILDER_IMPORTS = [
   TranslatePipe,
 ];
 
+interface ItemIndices {
+  mealIndex: number;
+  optionIndex: number;
+  itemIndex: number;
+}
+
 /** Below this width meals sit side by side in a snap track, one per screen. */
 const SWIPE_MEDIA = '(max-width: 767px)';
 
@@ -50,14 +56,18 @@ const SWIPE_MEDIA = '(max-width: 767px)';
 export class DietBuilderComponent implements OnChanges, OnDestroy {
   @Input() meals: Meal[] = [];
   @Input() selectedMealName = '';
+  @Input() selectedOptionIndex = 0;
 
-  @Output() itemRemoved = new EventEmitter<{
-    mealIndex: number;
-    itemIndex: number;
+  @Output() itemRemoved = new EventEmitter<ItemIndices>();
+  @Output() itemChanged = new EventEmitter<ItemIndices>();
+  @Output() optionTargeted = new EventEmitter<{
+    mealName: string;
+    optionIndex: number;
   }>();
-  @Output() itemChanged = new EventEmitter<{
+  @Output() optionAdded = new EventEmitter<number>();
+  @Output() optionRemoved = new EventEmitter<{
     mealIndex: number;
-    itemIndex: number;
+    optionIndex: number;
   }>();
   @Output() mealNameChanged = new EventEmitter<{
     index: number;
@@ -128,12 +138,51 @@ export class DietBuilderComponent implements OnChanges, OnDestroy {
     }, 120);
   }
 
-  onItemInputChange(mealIndex: number, itemIndex: number): void {
-    this.itemChanged.emit({ mealIndex, itemIndex });
+  onItemInputChange(mealIndex: number, optionIndex: number, itemIndex: number): void {
+    this.itemChanged.emit({ mealIndex, optionIndex, itemIndex });
   }
 
-  removeFoodFromDiet(mealIndex: number, itemIndex: number): void {
-    this.itemRemoved.emit({ mealIndex, itemIndex });
+  removeFoodFromDiet(mealIndex: number, optionIndex: number, itemIndex: number): void {
+    this.itemRemoved.emit({ mealIndex, optionIndex, itemIndex });
+  }
+
+  /** Option 1 lives in meal.items; options 2+ in meal.alternatives. */
+  optionsOf(meal: Meal): DietItem[][] {
+    return [meal.items, ...(meal.alternatives ?? []).map((o) => o.items)];
+  }
+
+  isTargetOption(meal: Meal, optionIndex: number): boolean {
+    return meal.name === this.selectedMealName && optionIndex === this.selectedOptionIndex;
+  }
+
+  targetOption(meal: Meal, optionIndex: number): void {
+    this.optionTargeted.emit({ mealName: meal.name, optionIndex });
+  }
+
+  removeOption(mealIndex: number, optionIndex: number): void {
+    const meal = this.meals[mealIndex];
+    const remove = () => this.optionRemoved.emit({ mealIndex, optionIndex });
+    if (!optionItems(meal, optionIndex).length) {
+      remove();
+      return;
+    }
+    this.confirmationService.confirm({
+      message: this.i18nService.t('confirm.deleteOption.message', {
+        option: this.i18nService.t('builder.option', { n: optionIndex + 1 }),
+        mealName: meal.name,
+      }),
+      header: this.i18nService.t('confirm.deleteOption.header'),
+      icon: 'pi pi-exclamation-triangle',
+      acceptLabel: this.i18nService.t('confirm.yes'),
+      rejectLabel: this.i18nService.t('confirm.no'),
+      acceptButtonStyleClass: 'p-button-danger',
+      rejectButtonStyleClass: 'p-button-text',
+      accept: remove,
+    });
+  }
+
+  getOptionKcal(items: DietItem[]): number {
+    return items.reduce((total, item) => total + this.getItemKcal(item), 0);
   }
 
   startEditMeal(index: number, currentName: string): void {
