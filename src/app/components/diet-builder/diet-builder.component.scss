@@ -365,6 +365,99 @@
   font-size: var(--font-size-sm);
 }
 
+/* Options — interchangeable versions of the meal, stacked. The target one
+   carries the same yellow mark as the target meal. */
+.option--split {
+  margin-top: var(--spacing-sm);
+  padding: 0 var(--spacing-md) var(--spacing-sm);
+  border: 1px solid var(--surface-border);
+  border-radius: var(--border-radius);
+}
+
+.option--split + .option--split {
+  margin-top: var(--spacing-md);
+}
+
+.option--split.is-target {
+  border-color: var(--target);
+  box-shadow: inset 0 2px 0 var(--target);
+}
+
+.option__head {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: var(--spacing-xs) var(--spacing-md);
+  min-height: 2.75rem;
+  padding: var(--spacing-xs) 0;
+  border-bottom: 1px dashed var(--surface-border);
+}
+
+.option__title {
+  font-family: var(--font-family-display);
+  font-size: var(--font-size-lg);
+  font-weight: var(--font-weight-bold);
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--text-color);
+}
+
+.option__note {
+  font-size: var(--font-size-xs);
+  color: var(--text-muted);
+}
+
+.option__kcal {
+  font-family: var(--font-family-display);
+  font-size: var(--font-size-lg);
+  font-weight: var(--font-weight-semibold);
+  font-variant-numeric: tabular-nums;
+  color: var(--text-color);
+}
+
+.option__kcal small {
+  margin-left: 0.2rem;
+  font-family: var(--font-family);
+  font-size: var(--font-size-xs);
+  color: var(--text-muted);
+}
+
+.option__actions {
+  display: flex;
+  align-items: center;
+  gap: 0.125rem;
+  margin-left: auto;
+}
+
+.add-option-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+  min-height: 2.25rem;
+  margin-top: var(--spacing-sm);
+  padding: 0 var(--spacing-sm);
+  border: none;
+  border-radius: var(--border-radius-sm);
+  background: transparent;
+  color: var(--text-muted);
+  font-family: inherit;
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-medium);
+  cursor: pointer;
+  transition:
+    background-color 0.15s ease,
+    color 0.15s ease;
+}
+
+.add-option-btn:hover {
+  background: var(--surface-hover);
+  color: var(--text-color);
+}
+
+.add-option-btn .pi {
+  font-size: 0.7rem;
+}
+
 /* Add-meal affordance */
 .add-meal-row {
   margin-top: var(--spacing-md);

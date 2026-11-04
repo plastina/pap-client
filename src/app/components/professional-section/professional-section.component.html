@@ -1,0 +1,146 @@
+<details class="pro-panel" [open]="startExpanded">
+  <summary class="pro-panel__summary" [attr.aria-label]="'professional.toggleAria' | t">
+    <i class="pi pi-chevron-right pro-panel__chevron" aria-hidden="true"></i>
+    <span class="pro-panel__title">{{ "professional.title" | t }}</span>
+    <span class="pro-panel__hint" [class.is-empty]="!summary">
+      {{ summary || ("professional.empty" | t) }}
+    </span>
+  </summary>
+
+  <div class="pro-panel__body">
+    <div class="pro-fields">
+      <div class="field field-name">
+        <label for="proName">{{ "professional.name" | t }}</label>
+        <input
+          id="proName"
+          type="text"
+          pInputText
+          autocomplete="name"
+          [ngModel]="profile.name"
+          (ngModelChange)="setField('name', $event)"
+        />
+      </div>
+      <div class="field">
+        <label for="proTitle">{{ "professional.jobTitle" | t }}</label>
+        <input
+          id="proTitle"
+          type="text"
+          pInputText
+          [placeholder]="'pdf.defaultTitle' | t"
+          [ngModel]="profile.title"
+          (ngModelChange)="setField('title', $event)"
+        />
+      </div>
+      <div class="field">
+        <label for="proCrn">{{ "professional.crn" | t }}</label>
+        <input
+          id="proCrn"
+          type="text"
+          pInputText
+          [placeholder]="'professional.crnPlaceholder' | t"
+          [ngModel]="profile.crn"
+          (ngModelChange)="setField('crn', $event)"
+        />
+      </div>
+      <div class="field">
+        <label for="proPhone">{{ "professional.phone" | t }}</label>
+        <input
+          id="proPhone"
+          type="tel"
+          pInputText
+          autocomplete="tel"
+          [ngModel]="profile.phone"
+          (ngModelChange)="setField('phone', $event)"
+        />
+      </div>
+      <div class="field field-email">
+        <label for="proEmail">{{ "professional.email" | t }}</label>
+        <input
+          id="proEmail"
+          type="email"
+          pInputText
+          autocomplete="email"
+          [ngModel]="profile.email"
+          (ngModelChange)="setField('email', $event)"
+        />
+      </div>
+    </div>
+
+    <div class="pro-brand">
+      <div class="field">
+        <span class="field__label" id="proLogoLabel">{{ "professional.logo" | t }}</span>
+        <div class="logo" aria-labelledby="proLogoLabel">
+          <div class="logo__preview">
+            <img *ngIf="profile.logo" [src]="profile.logo.dataUrl" alt="" />
+            <span *ngIf="!profile.logo" class="logo__monogram" aria-hidden="true">
+              {{ (profile.name.trim()[0] || "·") | uppercase }}
+            </span>
+          </div>
+          <div class="logo__actions">
+            <label class="pro-btn">
+              <input
+                type="file"
+                accept="image/png,image/jpeg"
+                class="visually-hidden"
+                (change)="onLogoSelected($event)"
+              />
+              <i class="pi pi-upload" aria-hidden="true"></i>
+              {{ (profile.logo ? "professional.logoReplace" : "professional.logoUpload") | t }}
+            </label>
+            <button
+              *ngIf="profile.logo"
+              type="button"
+              class="pro-btn pro-btn--quiet"
+              (click)="removeLogo()"
+            >
+              {{ "professional.logoRemove" | t }}
+            </button>
+            <p *ngIf="!profile.logo" class="logo__hint">
+              {{ "professional.logoHint" | t }}
+            </p>
+          </div>
+        </div>
+      </div>
+
+      <div class="pdf-options">
+        <fieldset class="field palettes">
+          <legend class="field__label">{{ "professional.palette" | t }}</legend>
+          <div class="palettes__list">
+            <label
+              *ngFor="let p of palettes"
+              class="palette"
+              [class.is-selected]="profile.palette === p.id"
+            >
+              <input
+                type="radio"
+                name="proPalette"
+                class="visually-hidden"
+                [value]="p.id"
+                [checked]="profile.palette === p.id"
+                (change)="setPalette(p.id)"
+              />
+              <!-- Miniature of a PDF page: band, alternating row, accent mark. -->
+              <span class="palette__page" aria-hidden="true">
+                <i class="palette__mark" [style.border-color]="p.accent"></i>
+                <i class="palette__band" [style.background]="p.primary"></i>
+                <i class="palette__row"></i>
+                <i class="palette__row" [style.background]="p.tint"></i>
+                <i class="palette__row"></i>
+              </span>
+              <span class="palette__name">{{ "professional.palette." + p.id | t }}</span>
+            </label>
+          </div>
+        </fieldset>
+
+        <label class="pro-check">
+          <input
+            type="checkbox"
+            [checked]="profile.includeSummary"
+            (change)="setIncludeSummary($any($event.target).checked)"
+          />
+          {{ "professional.includeSummary" | t }}
+        </label>
+      </div>
+    </div>
+  </div>
+</details>

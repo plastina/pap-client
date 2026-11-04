@@ -19,7 +19,7 @@
         <div class="meal__title-row">
           <h3 class="meal__title">{{ meal.name }}</h3>
           <span
-            *ngIf="meal.name === selectedMealName"
+            *ngIf="meal.name === selectedMealName && !meal.alternatives?.length"
             class="meal__target-flag"
           >
             {{ "builder.currentTarget" | t }}
@@ -125,86 +125,150 @@
     </header>
 
     <div class="meal__body">
-      <div class="meal__cols" *ngIf="meal.items?.length" aria-hidden="true">
-        <span>{{ "builder.quantity" | t }}</span>
-        <span>{{ "builder.colFood" | t }}</span>
-        <span>{{ "builder.measure" | t }}</span>
-        <span class="meal__cols-kcal">{{ "builder.colKcal" | t }}</span>
-        <span></span>
-      </div>
-
+      <!-- Options stack inside the meal; option 1 is the one in the totals. -->
       <div
-        *ngFor="let item of meal.items; let itemIndex = index"
-        class="item"
+        *ngFor="
+          let items of optionsOf(meal);
+          let optionIndex = index;
+          let optionTotal = count
+        "
+        class="option"
+        [class.option--split]="optionTotal > 1"
+        [class.is-target]="optionTotal > 1 && isTargetOption(meal, optionIndex)"
       >
-        <div class="item__qty">
-          <p-inputNumber
-            [(ngModel)]="item.displayQuantity"
-            (ngModelChange)="onItemInputChange(mealIndex, itemIndex)"
-            [inputId]="'qty-' + mealIndex + '-' + itemIndex"
-            [ariaLabel]="('builder.quantity' | t) + ': ' + item.food.name"
-            mode="decimal"
-            [min]="0"
-            [step]="0.5"
-            [showButtons]="true"
-            buttonLayout="horizontal"
-            incrementButtonIcon="pi pi-plus"
-            decrementButtonIcon="pi pi-minus"
-            [minFractionDigits]="0"
-            [maxFractionDigits]="1"
-          ></p-inputNumber>
-        </div>
-
-        <div class="item__name" [title]="item.food.name">
-          <span>{{ item.food.name }}</span>
-        </div>
-
-        <div class="item__measure">
-          <p-select
-            [placeholder]="'builder.measure' | t"
-            appendTo="body"
-            [options]="item.measures"
-            [(ngModel)]="item.selectedMeasure"
-            (ngModelChange)="onItemInputChange(mealIndex, itemIndex)"
-            optionLabel="measure_name"
-            optionValue="measure_name"
-            [ariaLabel]="('builder.measure' | t) + ': ' + item.food.name"
+        <div class="option__head" *ngIf="optionTotal > 1">
+          <span class="option__title">
+            {{ "builder.option" | t: { n: optionIndex + 1 } }}
+          </span>
+          <span *ngIf="optionIndex === 0" class="option__note">
+            {{ "builder.optionCounts" | t }}
+          </span>
+          <span
+            *ngIf="isTargetOption(meal, optionIndex)"
+            class="meal__target-flag"
           >
-            <ng-template pTemplate="selectedItem" let-option>
-              {{ measureLabel(item, option) }}
-            </ng-template>
-            <ng-template pTemplate="item" let-option>
-              {{ measureLabel(item, option) }}
-            </ng-template>
-          </p-select>
+            {{ "builder.currentTarget" | t }}
+          </span>
+          <span class="option__kcal">
+            {{ getOptionKcal(items) | number: "1.0-0" }}<small>kcal</small>
+          </span>
+          <span class="option__actions">
+            <button
+              *ngIf="!isTargetOption(meal, optionIndex)"
+              type="button"
+              class="meal__action meal__action--target"
+              (click)="targetOption(meal, optionIndex)"
+              [attr.aria-label]="
+                'builder.useAsTargetAria'
+                  | t
+                    : {
+                        mealName:
+                          meal.name +
+                          ' · ' +
+                          ('builder.option' | t: { n: optionIndex + 1 }),
+                      }
+              "
+            >
+              <i class="pi pi-arrow-right" aria-hidden="true"></i>
+              {{ "builder.useAsTarget" | t }}
+            </button>
+            <button
+              type="button"
+              class="meal__action meal__action--danger"
+              (click)="removeOption(mealIndex, optionIndex)"
+            >
+              {{ "builder.removeOption" | t }}
+            </button>
+          </span>
         </div>
 
-        <div class="item__kcal">
-          {{ getItemKcal(item) | number: "1.0-0" }}
+        <div class="meal__cols" *ngIf="items.length" aria-hidden="true">
+          <span>{{ "builder.quantity" | t }}</span>
+          <span>{{ "builder.colFood" | t }}</span>
+          <span>{{ "builder.measure" | t }}</span>
+          <span class="meal__cols-kcal">{{ "builder.colKcal" | t }}</span>
+          <span></span>
         </div>
 
-        <button
-          type="button"
-          class="icon-btn icon-btn--remove"
-          (click)="removeFoodFromDiet(mealIndex, itemIndex)"
-          [attr.aria-label]="('builder.removeItem' | t) + ': ' + item.food.name"
-        >
-          <i class="pi pi-times" aria-hidden="true"></i>
-        </button>
+        <div *ngFor="let item of items; let itemIndex = index" class="item">
+          <div class="item__qty">
+            <p-inputNumber
+              [(ngModel)]="item.displayQuantity"
+              (ngModelChange)="onItemInputChange(mealIndex, optionIndex, itemIndex)"
+              [inputId]="'qty-' + mealIndex + '-' + optionIndex + '-' + itemIndex"
+              [ariaLabel]="('builder.quantity' | t) + ': ' + item.food.name"
+              mode="decimal"
+              [min]="0"
+              [step]="0.5"
+              [showButtons]="true"
+              buttonLayout="horizontal"
+              incrementButtonIcon="pi pi-plus"
+              decrementButtonIcon="pi pi-minus"
+              [minFractionDigits]="0"
+              [maxFractionDigits]="1"
+            ></p-inputNumber>
+          </div>
+
+          <div class="item__name" [title]="item.food.name">
+            <span>{{ item.food.name }}</span>
+          </div>
+
+          <div class="item__measure">
+            <p-select
+              [placeholder]="'builder.measure' | t"
+              appendTo="body"
+              [options]="item.measures"
+              [(ngModel)]="item.selectedMeasure"
+              (ngModelChange)="onItemInputChange(mealIndex, optionIndex, itemIndex)"
+              optionLabel="measure_name"
+              optionValue="measure_name"
+              [ariaLabel]="('builder.measure' | t) + ': ' + item.food.name"
+            >
+              <ng-template pTemplate="selectedItem" let-option>
+                {{ measureLabel(item, option) }}
+              </ng-template>
+              <ng-template pTemplate="item" let-option>
+                {{ measureLabel(item, option) }}
+              </ng-template>
+            </p-select>
+          </div>
+
+          <div class="item__kcal">
+            {{ getItemKcal(item) | number: "1.0-0" }}
+          </div>
+
+          <button
+            type="button"
+            class="icon-btn icon-btn--remove"
+            (click)="removeFoodFromDiet(mealIndex, optionIndex, itemIndex)"
+            [attr.aria-label]="('builder.removeItem' | t) + ': ' + item.food.name"
+          >
+            <i class="pi pi-times" aria-hidden="true"></i>
+          </button>
+        </div>
+
+        <div *ngIf="items.length === 0" class="meal__empty">
+          <span>{{ "builder.emptyMeal" | t }}</span>
+          <button
+            *ngIf="optionTotal === 1 && meal.name !== selectedMealName"
+            type="button"
+            class="meal__action meal__action--target"
+            (click)="mealTargeted.emit(meal.name)"
+          >
+            <i class="pi pi-arrow-right" aria-hidden="true"></i>
+            {{ "builder.useAsTarget" | t }}
+          </button>
+        </div>
       </div>
 
-      <div *ngIf="!meal.items || meal.items.length === 0" class="meal__empty">
-        <span>{{ "builder.emptyMeal" | t }}</span>
-        <button
-          *ngIf="meal.name !== selectedMealName"
-          type="button"
-          class="meal__action meal__action--target"
-          (click)="mealTargeted.emit(meal.name)"
-        >
-          <i class="pi pi-arrow-right" aria-hidden="true"></i>
-          {{ "builder.useAsTarget" | t }}
-        </button>
-      </div>
+      <button
+        type="button"
+        class="add-option-btn"
+        (click)="optionAdded.emit(mealIndex)"
+      >
+        <i class="pi pi-plus" aria-hidden="true"></i>
+        {{ "builder.addOption" | t }}
+      </button>
     </div>
   </section>
 </div>

@@ -215,7 +215,8 @@
 }
 
 /* Patient panel + editor */
-app-patient-section {
+app-patient-section,
+app-professional-section {
   display: block;
   margin-top: var(--spacing-md);
 }

@@ -31,9 +31,10 @@ import { DietBuilderComponent } from './components/diet-builder/diet-builder.com
 import { MealManagementComponent } from './components/meal-management/meal-management.component';
 import { PatientSectionComponent } from './components/patient-section/patient-section.component';
 import { PlanSummaryComponent } from './components/plan-summary/plan-summary.component';
+import { ProfessionalSectionComponent } from './components/professional-section/professional-section.component';
 import { DietItem } from './models/diet-item.model';
 import { Food } from './models/food.model';
-import { Meal } from './models/meal.model';
+import { Meal, optionCount, optionItems } from './models/meal.model';
 import { Measure } from './models/measure.model';
 import { PatientData } from './models/patient-data.model';
 import {
@@ -45,12 +46,20 @@ import { TranslatePipe } from './pipes/t.pipe';
 import { FoodApiService } from './services/food-api.service';
 import { AppLanguage, I18nService } from './services/i18n.service';
 import { PdfExportService } from './services/pdf-export.service';
+import { ProfessionalProfileService } from './services/professional-profile.service';
 import { Theme, ThemeService } from './services/theme.service';
 
 /** Patient data as it comes back from JSON (dob is serialised as a string). */
 type PersistedPatientData = Omit<PatientData, 'dob'> & {
   dob?: string | Date | null;
 };
+
+/** Locates an item: meal, option (0 = option 1) and position. */
+interface ItemIndices {
+  mealIndex: number;
+  optionIndex: number;
+  itemIndex: number;
+}
 
 interface AutoSaveState {
   meals: Meal[];
@@ -78,6 +87,7 @@ const IMPORTS = [
   MealManagementComponent,
   DietBuilderComponent,
   PlanSummaryComponent,
+  ProfessionalSectionComponent,
 ];
 
 @Component({
@@ -91,7 +101,18 @@ const IMPORTS = [
 export class AppComponent implements OnInit, AfterViewInit, OnDestroy {
   title = 'saas-nutri-frontend';
   meals: Meal[] = [];
-  selectedMealName = '';
+  /** Option of the target meal that receives searched foods (0 = option 1). */
+  selectedOptionIndex = 0;
+  private targetMealName = '';
+
+  /** Picking another target meal starts again at its option 1. */
+  get selectedMealName(): string {
+    return this.targetMealName;
+  }
+  set selectedMealName(name: string) {
+    if (name !== this.targetMealName) this.selectedOptionIndex = 0;
+    this.targetMealName = name;
+  }
   patientSessionData: PatientData = {
     name: null,
     dob: null,
@@ -133,12 +154,60 @@ export class AppComponent implements OnInit, AfterViewInit, OnDestroy {
     private confirmationService: ConfirmationService,
     private themeService: ThemeService,
     private i18nService: I18nService,
+    private professionalProfileService: ProfessionalProfileService,
   ) {}
 
   get hasItemsInAnyMeal(): boolean {
-    return (
-      this.meals.length > 0 && this.meals.some((meal) => meal.items.length > 0)
+    return this.meals.some(
+      (meal) =>
+        meal.items.length > 0 ||
+        (meal.alternatives ?? []).some((option) => option.items.length > 0),
     );
+  }
+
+  /** "Almoço" or, when the meal has options, "Almoço · Opção 2". */
+  get targetLabel(): string {
+    const meal = this.meals.find((m) => m.name === this.selectedMealName);
+    if (!meal || optionCount(meal) === 1) return this.selectedMealName;
+    const option = this.i18nService.t('builder.option', {
+      n: this.selectedOptionIndex + 1,
+    });
+    return `${meal.name} · ${option}`;
+  }
+
+  selectTarget(target: { mealName: string; optionIndex: number }): void {
+    this.selectedMealName = target.mealName;
+    this.selectedOptionIndex = target.optionIndex;
+  }
+
+  addOption(mealIndex: number): void {
+    const meal = this.meals[mealIndex];
+    if (!meal) return;
+    meal.alternatives = [...(meal.alternatives ?? []), { items: [] }];
+    this.selectTarget({ mealName: meal.name, optionIndex: optionCount(meal) - 1 });
+    this.triggerStateChange();
+  }
+
+  /** Removing option 1 promotes option 2, so totals always have an option 1. */
+  removeOption(target: { mealIndex: number; optionIndex: number }): void {
+    const meal = this.meals[target.mealIndex];
+    if (!meal?.alternatives?.length) return;
+    if (target.optionIndex === 0) {
+      meal.items = meal.alternatives[0].items;
+      meal.totalKcal = undefined;
+    }
+    const removeAt = Math.max(target.optionIndex - 1, 0);
+    meal.alternatives = meal.alternatives.filter((_, i) => i !== removeAt);
+    if (!meal.alternatives.length) delete meal.alternatives;
+    if (meal.name === this.selectedMealName) {
+      this.selectedOptionIndex = Math.min(
+        this.selectedOptionIndex,
+        optionCount(meal) - 1,
+      );
+    }
+    this.calculateTotals();
+    this.triggerStateChange();
+    this.triggerPlanCalc();
   }
 
   /** Short facts for the board: weight, height, age. */
@@ -405,7 +474,8 @@ export class AppComponent implements OnInit, AfterViewInit, OnDestroy {
     );
     this.meals = updatedMeals;
     if (this.selectedMealName === currentName) {
-      this.selectedMealName = event.newName;
+      const optionIndex = this.selectedOptionIndex;
+      this.selectTarget({ mealName: event.newName, optionIndex });
     }
     this.triggerStateChange();
     this.triggerPlanCalc();
@@ -448,6 +518,8 @@ export class AppComponent implements OnInit, AfterViewInit, OnDestroy {
     if (!Array.isArray(targetMeal.items)) {
       targetMeal.items = [];
     }
+    const targetItems = optionItems(targetMeal, this.selectedOptionIndex);
+    const targetLabel = this.targetLabel;
 
     const pushItem = (measures: Measure[]): void => {
       const newItem: DietItem = {
@@ -457,7 +529,7 @@ export class AppComponent implements OnInit, AfterViewInit, OnDestroy {
         quantityInGrams: 100,
         measures,
       };
-      targetMeal.items.push(newItem);
+      targetItems.push(newItem);
       this.calculateTotals();
       this.triggerStateChange();
       this.triggerPlanCalc();
@@ -466,7 +538,7 @@ export class AppComponent implements OnInit, AfterViewInit, OnDestroy {
         summary: this.i18nService.t('toast.success'),
         detail: this.i18nService.t('toast.foodAdded', {
           foodName: food.name,
-          mealName: targetMeal.name,
+          mealName: targetLabel,
         }),
       });
     };
@@ -522,9 +594,9 @@ export class AppComponent implements OnInit, AfterViewInit, OnDestroy {
     item.quantityInGrams = Math.round(item.quantityInGrams * 10) / 10;
   }
 
-  handleItemChange(indices: { mealIndex: number; itemIndex: number }): void {
-    console.log('handleItemChange chamado', indices);
-    const item = this.meals[indices.mealIndex]?.items[indices.itemIndex];
+  handleItemChange(indices: ItemIndices): void {
+    const meal = this.meals[indices.mealIndex];
+    const item = meal && optionItems(meal, indices.optionIndex)[indices.itemIndex];
     if (item) {
       this.updateGrams(item);
       this.calculateTotals();
@@ -533,9 +605,10 @@ export class AppComponent implements OnInit, AfterViewInit, OnDestroy {
     }
   }
 
-  handleRemoveFood(indices: { mealIndex: number; itemIndex: number }): void {
-    if (this.meals[indices.mealIndex]?.items) {
-      this.meals[indices.mealIndex].items.splice(indices.itemIndex, 1);
+  handleRemoveFood(indices: ItemIndices): void {
+    const meal = this.meals[indices.mealIndex];
+    if (meal) {
+      optionItems(meal, indices.optionIndex).splice(indices.itemIndex, 1);
       this.calculateTotals();
       this.triggerStateChange();
       this.triggerPlanCalc();
@@ -764,7 +837,7 @@ export class AppComponent implements OnInit, AfterViewInit, OnDestroy {
     });
   }
 
-  exportPlanToPdf(): void {
+  async exportPlanToPdf(): Promise<void> {
     if (!this.hasItemsInAnyMeal) {
       this.messageService.add({
         severity: 'warn',
@@ -785,11 +858,22 @@ export class AppComponent implements OnInit, AfterViewInit, OnDestroy {
       ?.name
       ? this.patientSessionData
       : undefined;
-    this.pdfExportService.generateDietPlanPdf(
-      this.meals,
-      currentTotals,
-      currentPatientData,
-    );
+    try {
+      await this.pdfExportService.generateDietPlanPdf(
+        this.meals,
+        currentTotals,
+        this.professionalProfileService.profile,
+        currentPatientData,
+      );
+    } catch (error) {
+      console.error('PDF export failed', error);
+      this.messageService.add({
+        severity: 'error',
+        summary: this.i18nService.t('toast.error'),
+        detail: this.i18nService.t('toast.pdfError'),
+      });
+      return;
+    }
     this.messageService.add({
       severity: 'success',
       summary: this.i18nService.t('toast.success'),
